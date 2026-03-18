@@ -2551,6 +2551,7 @@ function doLogout() {
   SID = '';
   showLoginOverlay();
 }
+window.doLogout = doLogout;
 
 /* Inicjalizacja — pokaż login jeśli brak nicku */
 if (!SID) {
