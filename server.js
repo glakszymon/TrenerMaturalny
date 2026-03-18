@@ -504,6 +504,22 @@ app.delete('/api/admin/tests/:id', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+/* PUT /api/admin/tests/:id – edytuj test */
+app.put('/api/admin/tests/:id', async (req, res) => {
+  const { test_name, input_data, expected, is_hidden } = req.body;
+  if (!test_name) return res.status(400).json({ error: 'Brak nazwy testu.' });
+  const id = parseInt(req.params.id);
+  if (!id || isNaN(id)) return res.status(400).json({ error: 'Nieprawidłowe id.' });
+  try {
+    const result = await db(
+      'UPDATE algo_task_tests SET test_name=?, input_data=?, expected=?, is_hidden=? WHERE id=?',
+      [test_name, input_data || '', expected || '', is_hidden ?? 0, id]
+    );
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Test nie istnieje.' });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 /* GET /api/history/sql/:sid – historia SQL */
 app.get('/api/history/sql/:sid', async (req, res) => {
   try {
