@@ -69,6 +69,13 @@ async function runMigrations() {
       is_active    TINYINT(1) DEFAULT 1,
       created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
     )`,
+    // tabela użytkowników z PINem
+    `CREATE TABLE IF NOT EXISTS users (
+      id         INT AUTO_INCREMENT PRIMARY KEY,
+      nick       VARCHAR(64) NOT NULL UNIQUE,
+      pin        VARCHAR(128) NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
   ];
   for (const sql of migrations) {
     try { await db(sql); }
@@ -129,6 +136,47 @@ function cleanup(dir) {
 app.get('/api/health', async (_req, res) => {
   try { await db('SELECT 1'); res.json({ ok: true, db: 'connected', node: process.version }); }
   catch (e) { res.status(500).json({ ok: false, error: e.message }); }
+});
+
+/* ════════════════════════════════════════════════════════════
+   AUTH – logowanie i rejestracja przez nick + PIN
+   ════════════════════════════════════════════════════════════ */
+
+/* POST /api/auth/login
+   Body: { nick, pin }
+   - Jeśli nick nie istnieje → tworzy nowego użytkownika z podanym PINem → { ok, created: true }
+   - Jeśli nick istnieje i PIN się zgadza → { ok, created: false }
+   - Jeśli nick istnieje i PIN błędny → 401 { error }
+*/
+app.post('/api/auth/login', async (req, res) => {
+  const { nick, pin } = req.body;
+  if (!nick || typeof nick !== 'string' || nick.trim().length < 2)
+    return res.status(400).json({ error: 'Nick musi mieć co najmniej 2 znaki.' });
+  if (!pin || typeof pin !== 'string' || pin.trim().length === 0)
+    return res.status(400).json({ error: 'PIN nie może być pusty.' });
+
+  const cleanNick = nick.trim();
+  const cleanPin  = pin.trim();
+
+  try {
+    const rows = await db('SELECT pin FROM users WHERE nick = ?', [cleanNick]);
+
+    if (rows.length === 0) {
+      // Nowy użytkownik — rejestracja
+      await db('INSERT INTO users (nick, pin) VALUES (?, ?)', [cleanNick, cleanPin]);
+      await db('INSERT IGNORE INTO sessions (session_id) VALUES (?)', [cleanNick]).catch(() => {});
+      return res.json({ ok: true, created: true });
+    }
+
+    // Istniejący użytkownik — weryfikacja PINu
+    if (rows[0].pin !== cleanPin) {
+      return res.status(401).json({ error: 'Nieprawidłowy PIN.' });
+    }
+
+    await db('INSERT IGNORE INTO sessions (session_id) VALUES (?)', [cleanNick]).catch(() => {});
+    return res.json({ ok: true, created: false });
+
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/tasks', async (_req, res) => {

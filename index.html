@@ -1414,9 +1414,161 @@ details:not([open]) > summary::before { content:'▸ '; }
   .qz-focus-header { padding:.6rem 1rem; }
   .qz-focus-qtext { font-size:1rem; }
 }
+
+/* ══════════════════════════════════════════
+   EKRAN LOGOWANIA
+══════════════════════════════════════════ */
+#loginOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+#loginOverlay.hidden { display: none; }
+
+.login-box {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem 2.25rem 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  animation: loginPop .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes loginPop {
+  from { opacity:0; transform:scale(.92) translateY(16px); }
+  to   { opacity:1; transform:none; }
+}
+
+.login-logo {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg,#5b4cf5,#06b6d4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 16px rgba(91,76,245,.3);
+  margin-bottom: 1.25rem;
+}
+
+.login-title {
+  font-size: 1.45rem; font-weight: 900; letter-spacing: -.03em;
+  color: var(--text); margin-bottom: .3rem; text-align: center;
+}
+.login-title em { color: var(--indigo); font-style: normal; }
+
+.login-sub {
+  font-size: .85rem; color: var(--muted); font-weight: 600;
+  text-align: center; margin-bottom: 1.75rem;
+}
+
+.login-label {
+  font-size: .72rem; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--muted);
+  align-self: flex-start; margin-bottom: .45rem;
+}
+
+.login-input {
+  width: 100%;
+  padding: .75rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--ui);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--raised);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  margin-bottom: .2rem;
+}
+.login-input:focus {
+  border-color: var(--indigo);
+  box-shadow: 0 0 0 3px rgba(91,76,245,.12);
+  background: #fff;
+}
+.login-input::placeholder { color: var(--faint); font-weight: 500; }
+
+.login-error {
+  font-size: .78rem; color: var(--rose); font-weight: 700;
+  align-self: flex-start; margin-bottom: .75rem; min-height: 1.2em;
+}
+
+.login-btn {
+  width: 100%;
+  padding: .85rem 1rem;
+  margin-top: .5rem;
+  border: none;
+  border-radius: var(--r-sm);
+  background: var(--indigo);
+  color: #fff;
+  font-family: var(--ui);
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all .18s;
+  letter-spacing: .01em;
+  box-shadow: 0 2px 12px rgba(91,76,245,.3);
+}
+.login-btn:hover { background: var(--indigo-d); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(91,76,245,.4); }
+.login-btn:active { transform: scale(.98); }
+.login-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+.login-footer {
+  margin-top: 1.25rem;
+  font-size: .72rem;
+  color: var(--faint);
+  text-align: center;
+  font-weight: 600;
+}
 </style>
 </head>
 <body>
+
+<!-- ══════════ EKRAN LOGOWANIA ══════════ -->
+<div id="loginOverlay">
+  <div class="login-box">
+    <div class="login-logo">🎓</div>
+    <div class="login-title">Matura<em>Info</em></div>
+    <div class="login-sub" id="loginSub">Wpisz nick i PIN, aby zacząć naukę</div>
+
+    <div class="login-label">Nick / Imię</div>
+    <input
+      class="login-input"
+      id="loginInput"
+      type="text"
+      placeholder="np. Kacper, Anna123..."
+      maxlength="40"
+      autocomplete="off"
+      spellcheck="false"
+    />
+
+    <div class="login-label" style="margin-top:.85rem">PIN</div>
+    <input
+      class="login-input"
+      id="loginPin"
+      type="password"
+      placeholder="Twój PIN..."
+      maxlength="64"
+      autocomplete="off"
+    />
+
+    <div class="login-error" id="loginError">&nbsp;</div>
+    <button class="login-btn" id="loginBtn">Zaloguj się →</button>
+    <div class="login-footer">
+      Jeśli logujesz się pierwszy raz, konto zostanie utworzone automatycznie.<br>
+      Zapamiętaj swój PIN — nie ma możliwości jego odzyskania.
+    </div>
+  </div>
+</div>
 
 <!-- HEADER -->
 <header>
@@ -2143,9 +2295,12 @@ details:not([open]) > summary::before { content:'▸ '; }
     </div>
   </div>
 
-  <div class="card card-sm" style="margin-bottom:.75rem">
-    <div class="clabel">ID sesji</div>
-    <code style="font-family:var(--mono);font-size:.82rem;color:var(--indigo)" id="sessionDisplay">—</code>
+  <div class="card card-sm" style="margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem">
+    <div>
+      <div class="clabel">Zalogowany jako</div>
+      <code style="font-family:var(--mono);font-size:.88rem;font-weight:800;color:var(--indigo)" id="sessionDisplay">—</code>
+    </div>
+    <button onclick="doLogout()" style="padding:5px 14px;border-radius:var(--r-sm);border:2px solid var(--border);background:var(--raised);color:var(--muted);font-family:var(--ui);font-size:.78rem;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap" onmouseover="this.style.background='var(--rose-l)';this.style.borderColor='#fca5a5';this.style.color='var(--rose)'" onmouseout="this.style.background='var(--raised)';this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Wyloguj</button>
   </div>
 
   <!-- Kafelki ogólne -->
@@ -2320,9 +2475,100 @@ function toast(msg, type){
   toastTimer=setTimeout(function(){t.classList.add('hidden');},3000);
 }
 
-/* ── session ── */
-var SID=localStorage.getItem('matura_sid');
-if(!SID){SID='sess_'+Date.now()+'_'+Math.random().toString(36).slice(2,9);localStorage.setItem('matura_sid',SID);}
+/* ── session / login ── */
+var SID = localStorage.getItem('matura_nick') || '';
+
+function showLoginOverlay() {
+  var overlay = $('loginOverlay');
+  overlay.classList.remove('hidden');
+  $('loginInput').value = SID;
+  $('loginPin').value   = '';
+  $('loginError').innerHTML = '&nbsp;';
+  $('loginSub').textContent = 'Wpisz nick i PIN, aby zacząć naukę';
+  $('loginBtn').disabled = false;
+  $('loginBtn').textContent = 'Zaloguj się →';
+  setTimeout(function() {
+    if (SID) { $('loginPin').focus(); }
+    else      { $('loginInput').focus(); }
+  }, 80);
+}
+
+async function doLogin() {
+  var nick = $('loginInput').value.trim();
+  var pin  = $('loginPin').value.trim();
+
+  if (!nick) {
+    $('loginError').textContent = 'Wpisz nick.';
+    $('loginInput').focus();
+    return;
+  }
+  if (nick.length < 2) {
+    $('loginError').textContent = 'Nick musi mieć co najmniej 2 znaki.';
+    $('loginInput').focus();
+    return;
+  }
+  if (!pin) {
+    $('loginError').textContent = 'Wpisz PIN.';
+    $('loginPin').focus();
+    return;
+  }
+
+  $('loginBtn').disabled = true;
+  $('loginBtn').textContent = 'Logowanie…';
+  $('loginError').innerHTML = '&nbsp;';
+
+  try {
+    var r = await apiPost('/api/auth/login', { nick: nick, pin: pin });
+
+    if (r && r.ok) {
+      SID = nick;
+      localStorage.setItem('matura_nick', SID);
+      $('loginOverlay').classList.add('hidden');
+      if (r.created) {
+        toast('✓ Konto utworzone. Witaj, ' + nick + '!', 'ok');
+      } else {
+        toast('✓ Zalogowano jako ' + nick, 'ok');
+      }
+    } else {
+      var msg = (r && r.error) || 'Błąd logowania.';
+      $('loginError').textContent = msg;
+      $('loginBtn').disabled = false;
+      $('loginBtn').textContent = 'Zaloguj się →';
+      if (msg.toLowerCase().includes('pin')) {
+        $('loginPin').value = '';
+        $('loginPin').focus();
+      }
+    }
+  } catch (e) {
+    $('loginError').textContent = 'Błąd połączenia z serwerem.';
+    $('loginBtn').disabled = false;
+    $('loginBtn').textContent = 'Zaloguj się →';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('matura_nick');
+  SID = '';
+  showLoginOverlay();
+}
+
+/* Inicjalizacja — pokaż login jeśli brak nicku */
+if (!SID) {
+  showLoginOverlay();
+} else {
+  $('loginOverlay').classList.add('hidden');
+}
+
+/* Eventy logowania */
+$('loginBtn').addEventListener('click', doLogin);
+$('loginInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { $('loginPin').focus(); }
+  $('loginError').innerHTML = '&nbsp;';
+});
+$('loginPin').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+  $('loginError').innerHTML = '&nbsp;';
+});
 
 function apiBase(){return ($('apiBase').value||'http://localhost:3001').replace(/\/$/,'');}
 async function apiPost(path,body){try{var r=await fetch(apiBase()+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}catch(e){return{error:e.message};}}
