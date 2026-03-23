@@ -347,6 +347,16 @@ details:not([open]) > summary::before { content:'▸ '; }
 .hist-badge-partial { display:inline-flex;align-items:center;padding:1px 7px;border-radius:99px;font-size:.68rem;font-weight:800;background:var(--amber-l);color:var(--amber); }
 .hist-time { color:var(--muted);font-size:.7rem;margin-left:auto;white-space:nowrap; }
 .hist-score { font-family:var(--mono);font-size:.75rem;color:var(--text);font-weight:700; }
+.hist-row-clickable { cursor:pointer; }
+.hist-duration { font-size:.68rem;color:var(--faint);font-family:var(--mono); }
+.hist-detail-panel { display:none; padding:.35rem .75rem .5rem 1rem; background:var(--raised); border-bottom:1px solid var(--border); font-size:.72rem; }
+.hist-detail-panel.on { display:block; }
+.hist-test-row { display:flex; align-items:center; gap:6px; padding:2px 0; }
+.hist-test-ok { color:var(--green); font-weight:700; }
+.hist-test-fail { color:var(--rose); font-weight:700; }
+.hist-test-name { color:var(--text); }
+.hist-test-ms { color:var(--faint); font-family:var(--mono); font-size:.68rem; margin-left:auto; }
+.hist-test-detail { padding:1px 0 3px 1.5rem; color:var(--muted); font-size:.68rem; font-family:var(--mono); }
 .editor-action-bar {
   display:flex; align-items:stretch; background:#0d1117;
   border-bottom:1px solid #21262d; flex-shrink:0; min-height:38px;
@@ -1531,153 +1541,38 @@ details:not([open]) > summary::before { content:'▸ '; }
 }
 
 /* ══════════════════════════════════════════
-   C++ AUTOCOMPLETE — DRACULA THEME
+   C++ AUTOCOMPLETE
 ══════════════════════════════════════════ */
 .CodeMirror-hints {
-  background: #282a36;
-  border: 1px solid #44475a;
+  background: #1e1e2e;
+  border: 1px solid #3a3a4a;
   border-radius: 4px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  font-family: var(--mono);
   font-size: 13px;
-  max-height: 20em;
+  max-height: 18em;
   overflow-y: auto;
   padding: 2px 0;
   z-index: 100;
   scrollbar-width: thin;
-  scrollbar-color: #44475a #282a36;
+  scrollbar-color: #3a3a4a #1e1e2e;
 }
 .CodeMirror-hint {
-  color: #f8f8f2;
-  padding: 4px 8px;
+  color: #cdd6f4;
+  padding: 3px 10px;
   cursor: pointer;
   white-space: pre;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 .CodeMirror-hint:hover {
-  background: #343746;
+  background: #2a2a3c;
 }
 li.CodeMirror-hint-active {
-  background: #44475a;
-  color: #f8f8f2;
-}
-.hint-with-icon.CodeMirror-hint {
-  display: flex;
-  align-items: center;
-  padding: 3px 8px;
-}
-.hint-icon {
-  display: inline-block;
-  width: 16px; height: 16px;
-  margin-right: 6px;
-  border-radius: 3px;
-  text-align: center;
-  font-size: 10px;
-  font-weight: bold;
-  line-height: 16px;
-  flex-shrink: 0;
-}
-.hint-icon-keyword { background: #ff79c6; color: #282a36; }
-.hint-icon-keyword::after { content: "K"; }
-.hint-icon-type { background: #8be9fd; color: #282a36; }
-.hint-icon-type::after { content: "T"; }
-.hint-icon-function { background: #bd93f9; color: #282a36; }
-.hint-icon-function::after { content: "F"; }
-.hint-icon-variable { background: #50fa7b; color: #282a36; }
-.hint-icon-variable::after { content: "V"; }
-.hint-icon-macro { background: #ffb86c; color: #282a36; }
-.hint-icon-macro::after { content: "M"; }
-.hint-label { flex: 1; }
-.hint-detail { color: #6272a4; font-size: .85em; margin-left: 12px; font-style: italic; }
-
-/* ══════════════════════════════════════════
-   CUSTOM STDIN TEXTAREA
-══════════════════════════════════════════ */
-.stdin-section {
-  margin-top: .65rem;
-  border-top: 1px solid var(--border);
-  padding-top: .6rem;
-}
-.stdin-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: .35rem;
-}
-.stdin-label {
-  font-size: .74rem;
-  font-weight: 700;
-  color: var(--muted);
-}
-.stdin-label kbd {
-  font-size: .65rem;
-  background: var(--bg-alt, #f0f0f0);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: .1em .35em;
-  font-family: var(--mono);
-  color: var(--faint);
-  margin-left: .3rem;
-}
-.stdin-actions {
-  display: flex;
-  gap: .3rem;
-}
-.stdin-btn {
-  font-size: .68rem;
-  font-weight: 700;
-  font-family: var(--ui);
-  padding: .2rem .5rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg-alt, #f6f8fa);
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .15s;
-}
-.stdin-btn:hover {
-  background: var(--indigo);
+  background: #3a3a4a;
   color: #fff;
-  border-color: var(--indigo);
-}
-.stdin-btn-clear {
-  padding: .2rem .4rem;
-  font-family: var(--mono);
-}
-.stdin-textarea {
-  width: 100%;
-  box-sizing: border-box;
-  font-family: var(--mono);
-  font-size: .78rem;
-  line-height: 1.5;
-  padding: .45rem .6rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: #fafbfc;
-  color: var(--fg);
-  resize: vertical;
-  max-height: 140px;
-  min-height: 2.5rem;
-  transition: border-color .2s, box-shadow .2s;
-}
-.stdin-textarea:focus {
-  outline: none;
-  border-color: var(--indigo);
-  box-shadow: 0 0 0 3px rgba(91,76,245,.12);
-}
-.stdin-textarea::placeholder {
-  color: var(--faint);
-  font-style: italic;
 }
 
-/* Sub-labels on buttons */
-.ebar-btn .btn-sublabel {
-  display: block;
-  font-size: .55rem;
-  font-weight: 600;
-  opacity: .7;
-  margin-top: .05rem;
-  letter-spacing: .02em;
-}
+
 
 /* ══════════════════════════════════════════
    UNDO SUBMISSION BUTTON
@@ -1801,8 +1696,8 @@ li.CodeMirror-hint-active {
     <div class="editor-action-bar">
       <span class="editor-tab on" style="cursor:default;font-family:var(--ui);font-weight:800;color:#c9d1d9;font-size:.78rem">⌥ C++</span>
       <div class="editor-spacer"></div>
-      <button class="ebar-btn ebar-run"      id="btnRun"      title="Uruchom z własnymi danymi (Ctrl+Enter)">▷ Uruchom<span class="btn-sublabel">testowe — bez zapisu</span></button>
-      <button class="ebar-btn ebar-submit"   id="btnCheck"    disabled title="Zatwierdź rozwiązanie (Ctrl+Shift+Enter)">✓ Zatwierdź<span class="btn-sublabel">oficjalne testy</span></button>
+<button class="ebar-btn ebar-run" id="btnRun" title="Uruchom z przykładowymi danymi (Ctrl+Enter)">▷ Uruchom</button>
+<button class="ebar-btn ebar-submit" id="btnCheck" disabled title="Zatwierdź rozwiązanie (Ctrl+Shift+Enter)">✓ Zatwierdź</button>
       <button class="ebar-btn ebar-hint"     id="btnHint"     disabled title="Pokaż podpowiedź">💡 Podpowiedź</button>
       <button class="ebar-btn ebar-solution" id="btnSolution" disabled title="Pokaż wzorcowe rozwiązanie">🏆 Rozwiązanie</button>
       <button class="ebar-btn ebar-clear"    id="btnReset"    title="Wyczyść edytor">✕ clear</button>
@@ -1859,16 +1754,7 @@ li.CodeMirror-hint-active {
             <pre class="io-pre" id="algoExOut">—</pre>
           </div>
         </div>
-        <div class="stdin-section">
-          <div class="stdin-header">
-            <span class="stdin-label">Własne dane wejściowe <kbd>Ctrl+I</kbd></span>
-            <div class="stdin-actions">
-              <button class="stdin-btn" id="btnPasteExample" title="Wklej przykładowe dane">📋 Wklej przykład</button>
-              <button class="stdin-btn stdin-btn-clear" id="btnClearStdin" title="Wyczyść">✕</button>
-            </div>
-          </div>
-          <textarea id="algoStdin" class="stdin-textarea" rows="3" placeholder="Wpisz dane wejściowe dla programu... (puste = brak stdin)" spellcheck="false"></textarea>
-        </div>
+
       </div>
       
       <!-- ── Stoper ── -->
@@ -1900,7 +1786,7 @@ li.CodeMirror-hint-active {
         <summary style="padding:.65rem 1rem;font-size:.72rem;font-weight:800;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;user-select:none">
           <span style="font-size:.85rem">📜</span> Historia zgłoszeń <span id="algoHistoryCount" style="margin-left:auto;font-size:.68rem;background:var(--raised);padding:1px 7px;border-radius:99px;color:var(--faint)">—</span>
         </summary>
-        <div id="algoHistoryList" style="max-height:220px;overflow-y:auto;border-top:1px solid var(--border)">
+        <div id="algoHistoryList" style="max-height:350px;overflow-y:auto;border-top:1px solid var(--border)">
           <div style="padding:.75rem 1rem;color:var(--muted);font-size:.8rem">Wybierz zadanie, aby zobaczyć historię.</div>
         </div>
       </details>
@@ -3000,15 +2886,6 @@ var CPP_KEYWORDS = [
 var CPP_KEYWORD_SET = {};
 CPP_KEYWORDS.forEach(function(k) { CPP_KEYWORD_SET[k.text] = true; });
 
-/* ── Icon class map ── */
-var HINT_ICON_CLASS = {
-  keyword:  'hint-icon-keyword',
-  type:     'hint-icon-type',
-  'function': 'hint-icon-function',
-  variable: 'hint-icon-variable',
-  macro:    'hint-icon-macro'
-};
-
 /* ── Register C++ hint helper ── */
 CodeMirror.registerHelper('hint', 'text/x-c++src', function(cm) {
   var cur = cm.getCursor();
@@ -3044,7 +2921,7 @@ CodeMirror.registerHelper('hint', 'text/x-c++src', function(cm) {
 
   // 2. Document word scanning (anyword-style) — exclude the current word
   var docText = cm.getValue();
-  var wordRegex = /\b[a-zA-Z_]\w{2,}\b/g;
+  var wordRegex = /\b[a-zA-Z_]\w{1,}\b/g;
   var docWords = {};
   var m;
   while ((m = wordRegex.exec(docText)) !== null) {
@@ -3066,21 +2943,7 @@ CodeMirror.registerHelper('hint', 'text/x-c++src', function(cm) {
   });
 
   return {
-    list: matches.map(function(item) {
-      return {
-        text: item.text,
-        render: function(el, self, data) {
-          el.className += ' hint-with-icon';
-          var icon = document.createElement('span');
-          icon.className = 'hint-icon ' + (HINT_ICON_CLASS[item.kind] || 'hint-icon-variable');
-          el.appendChild(icon);
-          var label = document.createElement('span');
-          label.className = 'hint-label';
-          label.textContent = item.text;
-          el.appendChild(label);
-        }
-      };
-    }),
+    list: matches.map(function(item) { return item.text; }),
     from: CodeMirror.Pos(cur.line, start),
     to: CodeMirror.Pos(cur.line, end)
   };
@@ -3337,6 +3200,15 @@ function fmtDateShort(d) {
   return dt.toLocaleString('pl-PL', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
 }
 
+function fmtDuration(ms) {
+  if (!ms && ms !== 0) return '';
+  if (ms < 1000) return ms + ' ms';
+  var s = Math.round(ms / 1000);
+  if (s < 60) return s + 's';
+  var m = Math.floor(s / 60);
+  return m + 'm ' + (s % 60) + 's';
+}
+
 async function loadAlgoHistory(taskId) {
   var list = $('algoHistoryList');
   var count = $('algoHistoryCount');
@@ -3348,19 +3220,67 @@ async function loadAlgoHistory(taskId) {
     var rows = data.filter(function(r) { return r.task_id == taskId; });
     if (count) count.textContent = rows.length ? rows.length + ' prób' : '0';
     if (!rows.length) { list.innerHTML = '<div style="padding:.75rem 1rem;color:var(--muted);font-size:.8rem">Brak zgłoszeń dla tego zadania.</div>'; return; }
-    list.innerHTML = rows.map(function(r) {
+    list.innerHTML = rows.map(function(r, idx) {
       var total = r.tests_total || 0;
       var passed = r.tests_passed || 0;
       var ok = total > 0 && passed === total;
       var partial = passed > 0 && !ok;
       var badgeCls = ok ? 'hist-badge-ok' : partial ? 'hist-badge-partial' : 'hist-badge-err';
       var badgeTxt = ok ? '✓ Pełny' : (total > 0 ? passed + '/' + total : '✗ Błąd');
-      return '<div class="hist-row">' +
+      var durTxt = r.duration_ms ? fmtDuration(r.duration_ms) : '';
+      return '<div class="hist-row hist-row-clickable" data-attempt-id="' + r.id + '" data-detail-idx="' + idx + '">' +
         '<span class="' + badgeCls + '">' + badgeTxt + '</span>' +
         (total > 0 ? '<span class="hist-score">' + Math.round(passed/total*100) + '%</span>' : '') +
+        (durTxt ? '<span class="hist-duration">' + durTxt + '</span>' : '') +
         '<span class="hist-time">' + fmtDateShort(r.attempted_at) + '</span>' +
-      '</div>';
+      '</div>' +
+      '<div class="hist-detail-panel" id="histDetail_' + idx + '"></div>';
     }).join('');
+
+    // Click handler for expanding details
+    list.querySelectorAll('.hist-row-clickable').forEach(function(row) {
+      row.addEventListener('click', function() {
+        var attemptId = this.getAttribute('data-attempt-id');
+        var idx = this.getAttribute('data-detail-idx');
+        var panel = document.getElementById('histDetail_' + idx);
+        if (!panel) return;
+        if (panel.classList.contains('on')) {
+          panel.classList.remove('on');
+          return;
+        }
+        // Close other panels
+        list.querySelectorAll('.hist-detail-panel.on').forEach(function(p) { p.classList.remove('on'); });
+        panel.innerHTML = '<span style="color:var(--muted)">Ładowanie...</span>';
+        panel.classList.add('on');
+        apiGet('/api/history/algo/' + SID + '/details/' + attemptId).then(function(tests) {
+          if (!Array.isArray(tests) || !tests.length) {
+            panel.innerHTML = '<span style="color:var(--muted)">Brak szczegółów testów.</span>';
+            return;
+          }
+          panel.innerHTML = tests.map(function(t) {
+            var ok = !!t.passed;
+            var icon = ok ? '✓' : '✗';
+            var cls = ok ? 'hist-test-ok' : 'hist-test-fail';
+            var html = '<div class="hist-test-row">' +
+              '<span class="' + cls + '">' + icon + '</span>' +
+              '<span class="hist-test-name">' + escH(t.test_name) + '</span>' +
+              '<span class="hist-test-ms">' + (t.time_ms || 0) + ' ms</span>' +
+            '</div>';
+            if (!ok && t.expected) {
+              html += '<div class="hist-test-detail">' +
+                (t.input_data ? 'Wejście: ' + escH(t.input_data).slice(0, 80) + '<br>' : '') +
+                'Oczekiwano: ' + escH(t.expected).slice(0, 80) + '<br>' +
+                'Otrzymano: ' + escH(t.got || '(brak)').slice(0, 80) +
+              '</div>';
+            }
+            return html;
+          }).join('');
+        }).catch(function(e) {
+          panel.innerHTML = '<span style="color:var(--rose)">Błąd: ' + e.message + '</span>';
+        });
+      });
+    });
+
     // Otwórz details jeśli są wpisy
     $('algoHistoryDetails').open = rows.length > 0;
   } catch(e) {
@@ -3400,10 +3320,6 @@ async function loadSQLHistory_task(taskId) {
 function selectAlgoTask(t){
   // Hide undo bar when switching tasks
   if (typeof hideUndoBar === 'function') hideUndoBar();
-  // Save current stdin before switching
-  if (currentTask && $('algoStdin')) {
-    sessionStorage.setItem('stdin_task_' + currentTask.id, $('algoStdin').value);
-  }
   currentTask = t;
   // Sync select
   var sel = $('algoTaskSelect');
@@ -3420,9 +3336,6 @@ function selectAlgoTask(t){
   $('btnSolution').disabled = false;
   $('btnRun').disabled     = false;
   $('testProgressWrap').style.display = 'none';
-  // Restore saved stdin for this task (or clear)
-  var savedStdin = sessionStorage.getItem('stdin_task_' + t.id);
-  $('algoStdin').value = savedStdin || '';
   termClear();
   termLine('// Zadanie #' + t.id + ': ' + t.title, 't-dim');
   termLine('// Wpisz kod i kliknij ▷ Uruchom lub ✓ Zatwierdź', 't-dim');
@@ -3435,59 +3348,76 @@ function selectAlgoTask(t){
   loadAlgoHistory(t.id);
 }
 
-/* ── Uruchom z własnymi danymi (bez zapisu do bazy) ── */
+/* ── Uruchom z przykładowymi danymi (bez zapisu do bazy) ── */
 function doRun() {
   if (!currentTask) { toast('Najpierw wybierz zadanie', 'err'); return; }
   var code = cppEditor.getValue().trim();
   if (code.length < 10) { toast('Kod jest zbyt krótki', 'err'); return; }
   var btn = $('btnRun');
   btn.disabled = true;
-  btn.innerHTML = '⟳ Uruchamianie...<span class="btn-sublabel">testowe — bez zapisu</span>';
-  var stdinVal = $('algoStdin').value;
+  btn.innerHTML = '⟳ Uruchamianie...';
   termClear();
-  termLine('── Uruchomienie z danymi ──────────────────', 't-dim');
-  if (stdinVal) {
-    termLine('stdin:', 't-dim');
-    stdinVal.split('\n').forEach(function(l) { termLine('  ' + l, ''); });
-  } else {
-    termLine('stdin: (puste)', 't-dim');
-  }
-  termLine('───────────────────────────────────────────', 't-dim');
-  termLine('Kompilowanie...', 't-dim');
-  apiPost('/api/algo/run', { code: code, stdin: stdinVal }).then(function(data) {
-    if (data.error) {
-      termLine('Błąd: ' + data.error, 't-err');
+  termLine('$ Kompilowanie i uruchamianie testów (bez zapisu)...', 't-dim');
+  apiPost('/api/algo/submit', {
+    task_id:  currentTask.id,
+    code:     code,
+    run_only: true
+  }).then(function(data) {
+    if (data.error) { termLine('Błąd: ' + data.error, 't-err'); return; }
+    if (!data.compiled) {
+      termLine('', '');
+      termLine('╔══ BŁĄD KOMPILACJI ══════════════════════════════════', 't-err');
+      (data.compile_error || '').split('\n').forEach(function(l) {
+        if (!l.trim()) return;
+        var cls = /error:/i.test(l) ? 't-err' : /warning:/i.test(l) ? 't-warn' : 't-dim';
+        termLine('  ' + l, cls);
+      });
+      termLine('╚═════════════════════════════════════════════════════', 't-err');
+      toast('Błąd kompilacji', 'err');
       return;
     }
-    if (!data.compiled) {
-      termLine('✗ Błąd kompilacji:', 't-err');
-      (data.compile_error || '').split('\n').forEach(function(l) {
-        if (l.trim()) termLine('  ' + l, 't-err');
-      });
-    } else {
-      termLine('', '');
-      if (data.timedOut) {
-        termLine('[TLE] Przekroczono limit czasu (3s)', 't-warn');
-      } else {
-        termLine('stdout:', 't-dim');
-        var output = data.stdout || '(brak wyjścia)';
-        termHTML('<pre style="color:#86efac;font-family:var(--mono);font-size:.8rem;line-height:1.6;white-space:pre;margin:0;padding:0 0 0 .5rem">' + escH(output) + '</pre>');
+    var total   = data.tests_total;
+    var passed  = data.tests_passed;
+    var pct     = total > 0 ? Math.round(passed / total * 100) : 0;
+    var allOk   = passed === total && total > 0;
+    var totalMs = (data.results || []).reduce(function(s, r) { return s + (r.time_ms || 0); }, 0);
+
+    termLine('', '');
+    termLine((allOk ? '✓ WSZYSTKIE TESTY ZDANE' : '✗ ' + passed + '/' + total + ' testów zdanych') + ' (' + pct + '%) · ' + totalMs + ' ms', allOk ? 't-ok' : 't-err');
+    termLine('─'.repeat(52), 't-dim');
+
+    (data.results || []).forEach(function(r) {
+      var icon, cls;
+      if (r.timedOut)       { icon = '[TLE] '; cls = 't-warn'; }
+      else if (r.passed)    { icon = '[OK]  '; cls = 't-ok';   }
+      else if (r.stderr)    { icon = '[RTE] '; cls = 't-warn'; }
+      else                  { icon = '[WA]  '; cls = 't-err';  }
+      termLine(icon + r.name + '  (' + r.time_ms + ' ms)', cls);
+      if (!r.passed && !r.hidden) {
+        if (r.timedOut) {
+          termLine('     ⏰ Przekroczono limit czasu 3s', 't-warn');
+        } else if (r.stderr) {
+          termLine('     ⚠ Błąd wykonania:', 't-warn');
+          r.stderr.split('\n').slice(0, 4).forEach(function(l) {
+            if (l.trim()) termLine('       ' + l, 't-warn');
+          });
+        } else {
+          termLine('     Wejście:    ' + (r.input    || '—'), 't-dim');
+          termLine('     Oczekiwano: ' + (r.expected || '—'), 't-dim');
+          termLine('     Otrzymano:  ' + (r.got      || '(brak wyjścia)'), 't-warn');
+        }
       }
-      if (data.stderr) {
-        termLine('', '');
-        termLine('stderr:', 't-warn');
-        data.stderr.split('\n').forEach(function(l) { if (l.trim()) termLine('  ' + l, 't-warn'); });
-      }
-      termLine('', '');
-      termLine('── Czas: ' + data.time_ms + ' ms ────────────────────────', 't-dim');
-    }
+    });
+
     termLine('', '');
     termLine('ℹ Wynik testowy — nie zapisano. Kliknij ✓ Zatwierdź, aby zapisać.', 't-dim');
+    if (allOk) toast('✓ Wszystkie testy zdane!', 'ok');
+    else       toast(passed + '/' + total + ' testów zdanych', 'err');
   }).catch(function(e) {
     termLine('Błąd połączenia: ' + e.message, 't-err');
   }).finally(function() {
     btn.disabled = false;
-    btn.innerHTML = '▷ Uruchom<span class="btn-sublabel">testowe — bez zapisu</span>';
+    btn.innerHTML = '▷ Uruchom';
   });
 }
 $('btnRun').addEventListener('click', doRun);
@@ -3498,7 +3428,7 @@ $('btnCheck').addEventListener('click', async function() {
   if (code.length < 20) { toast('Kod jest zbyt krótki', 'err'); return; }
   var btn = this;
   btn.disabled = true;
-  btn.innerHTML = '⟳ Testowanie...<span class="btn-sublabel">oficjalne testy</span>';
+  btn.innerHTML = '⟳ Testowanie...';
   termClear();
   termLine('$ Kompilowanie i uruchamianie testów...', 't-dim');
   var durationMs = stopwatches['swDisplay'] ? stopwatches['swDisplay'].getSec() * 1000 : 0;
@@ -3601,24 +3531,11 @@ $('btnCheck').addEventListener('click', async function() {
     termLine('Błąd połączenia: ' + e.message, 't-err');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '✓ Zatwierdź<span class="btn-sublabel">oficjalne testy</span>';
+    btn.innerHTML = '✓ Zatwierdź';
   }
 });
 
 /* ── Stdin: paste example & clear buttons ── */
-$('btnPasteExample').addEventListener('click', function() {
-  if (currentTask && currentTask.ex_input) {
-    $('algoStdin').value = currentTask.ex_input;
-    $('algoStdin').focus();
-  } else {
-    toast('Brak przykładowych danych', 'err');
-  }
-});
-$('btnClearStdin').addEventListener('click', function() {
-  $('algoStdin').value = '';
-  $('algoStdin').focus();
-});
-
 /* ── Keyboard shortcuts for algo section ── */
 document.addEventListener('keydown', function(e) {
   // Only active in algo section
@@ -3636,24 +3553,6 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     $('btnCheck').click();
     return;
-  }
-  // Ctrl+I → Focus stdin
-  if (e.ctrlKey && !e.shiftKey && (e.key === 'i' || e.key === 'I')) {
-    e.preventDefault();
-    $('algoStdin').focus();
-    return;
-  }
-});
-// Escape in stdin → back to editor
-$('algoStdin').addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    e.preventDefault();
-    cppEditor.focus();
-  }
-  // Ctrl+Enter from stdin textarea also runs
-  if (e.ctrlKey && !e.shiftKey && e.key === 'Enter') {
-    e.preventDefault();
-    doRun();
   }
 });
 

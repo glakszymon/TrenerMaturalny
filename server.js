@@ -600,8 +600,24 @@ app.get('/api/stats/:sid', async (req, res) => {
 app.get('/api/history/algo/:sid', async (req, res) => {
   try {
     const rows = await db(
-      'SELECT id, task_id, task_title, tests_total, tests_passed, attempted_at FROM algo_attempts WHERE session_id=? ORDER BY attempted_at DESC LIMIT 30',
+      'SELECT id, task_id, task_title, tests_total, tests_passed, duration_ms, attempted_at FROM algo_attempts WHERE session_id=? ORDER BY attempted_at DESC LIMIT 30',
       [req.params.sid]
+    );
+    res.json(rows);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/history/algo/:sid/details/:attemptId', async (req, res) => {
+  try {
+    // Verify the attempt belongs to the requested session
+    const att = await db(
+      'SELECT id FROM algo_attempts WHERE id=? AND session_id=?',
+      [req.params.attemptId, req.params.sid]
+    );
+    if (!att.length) return res.status(404).json({ error: 'Nie znaleziono.' });
+    const rows = await db(
+      'SELECT test_name, input_data, expected, got, passed, time_ms FROM algo_test_results WHERE attempt_id=? ORDER BY id',
+      [req.params.attemptId]
     );
     res.json(rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
