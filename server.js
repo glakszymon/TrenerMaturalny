@@ -130,16 +130,18 @@ function compileCpp(code) {
 
 function runBin(bin, input) {
   return new Promise(resolve => {
+    const MAX_OUTPUT = 1024 * 1024; // 1MB cap prevents memory DoS
     const t0 = Date.now();
     const child = spawn(bin, [], { timeout: RUN_MS, killSignal: 'SIGKILL' });
     let out = '', err = '';
-    child.stdout.on('data', d => { out += d.toString(); });
-    child.stderr.on('data', d => { err += d.toString(); });
+    child.stdout.on('data', d => { if (out.length < MAX_OUTPUT) out += d.toString(); });
+    child.stderr.on('data', d => { if (err.length < MAX_OUTPUT) err += d.toString(); });
     child.on('close', (_c, sig) => resolve({
       stdout: out, stderr: err,
       time_ms: Date.now() - t0,
       timedOut: sig === 'SIGKILL'
     }));
+    child.stdin.on('error', () => {}); // prevent EPIPE crash when binary exits before consuming stdin
     child.stdin.write(input || '');
     child.stdin.end();
   });
@@ -147,6 +149,22 @@ function runBin(bin, input) {
 
 function cleanup(dir) {
   try { fs.rmSync(dir, { recursive: true, force: true }); } catch (_) {}
+}
+
+/* ── Compilation concurrency limiter ── */
+let activeCompilations = 0;
+const MAX_CONCURRENT = 3;
+
+async function compileCppGuarded(code) {
+  if (activeCompilations >= MAX_CONCURRENT) {
+    return { ok: false, error: 'Serwer zajęty — za dużo równoległych kompilacji. Spróbuj ponownie.', dir: null };
+  }
+  activeCompilations++;
+  try {
+    return await compileCpp(code);
+  } finally {
+    activeCompilations--;
+  }
 }
 
 /* ── Routes ── */
@@ -235,10 +253,10 @@ app.post('/api/algo/submit', async (req, res) => {
     tests   = await db('SELECT * FROM algo_task_tests WHERE task_id=? ORDER BY id', [task_id]);
   } catch (e) { return res.status(500).json({ error: e.message }); }
 
-  const comp = await compileCpp(code);
+  const comp = await compileCppGuarded(code);
 
   if (!comp.ok) {
-    cleanup(comp.dir);
+    if (comp.dir) cleanup(comp.dir);
     if (session_id && !run_only) {
       await ensureSession(session_id).catch(() => {});
       await db(
@@ -273,6 +291,7 @@ app.post('/api/algo/submit', async (req, res) => {
   }
 
   const passed_count = results.filter(r => r.passed).length;
+  let attempt_id = null;
 
   if (session_id && !run_only) {
     let conn;
@@ -284,7 +303,7 @@ app.post('/api/algo/submit', async (req, res) => {
         'INSERT INTO algo_attempts (session_id, task_id, task_title, code, tests_total, tests_passed, duration_ms) VALUES (?,?,?,?,?,?,?)',
         [session_id, task_id, taskRow.title, code, tests.length, passed_count, duration_ms || 0]
       );
-      const attempt_id = ins.insertId;
+      attempt_id = Number(ins.insertId);
       for (const r of results) {
         await conn.query(
           'INSERT INTO algo_test_results (attempt_id, test_name, input_data, expected, got, passed, time_ms) VALUES (?,?,?,?,?,?,?)',
@@ -300,7 +319,105 @@ app.post('/api/algo/submit', async (req, res) => {
     }
   }
 
-  res.json({ compiled: true, tests_total: tests.length, tests_passed: passed_count, results });
+  res.json({ compiled: true, tests_total: tests.length, tests_passed: passed_count, attempt_id, results });
+});
+
+/* ── Run with custom stdin (no DB, no tests) ── */
+app.post('/api/algo/run', async (req, res) => {
+  const { code, stdin } = req.body;
+  if (!code || typeof code !== 'string' || code.length > MAX_CODE)
+    return res.status(400).json({ error: 'Brak kodu lub za długi.' });
+  if (stdin != null && (typeof stdin !== 'string' || stdin.length > MAX_CODE))
+    return res.status(400).json({ error: 'Dane wejściowe za długie (max 64 KB).' });
+
+  const comp = await compileCppGuarded(code);
+  if (!comp.ok) {
+    if (comp.dir) cleanup(comp.dir);
+    return res.json({ compiled: false, compile_error: comp.error });
+  }
+
+  try {
+    const run = await runBin(comp.bin, stdin || '');
+    res.json({
+      compiled: true,
+      stdout:   run.stdout,
+      stderr:   run.stderr,
+      time_ms:  run.time_ms,
+      timedOut: run.timedOut
+    });
+  } finally {
+    cleanup(comp.dir);
+  }
+});
+
+/* ── Undo: rate limiter (5 deletes/min/session) ── */
+const undoRateMap = new Map(); // session_id -> { count, resetAt }
+const UNDO_RATE_LIMIT = 5;
+const UNDO_RATE_WINDOW_MS = 60000;
+
+function checkUndoRate(sid) {
+  const now = Date.now();
+  let entry = undoRateMap.get(sid);
+  if (!entry || now > entry.resetAt) {
+    entry = { count: 0, resetAt: now + UNDO_RATE_WINDOW_MS };
+    undoRateMap.set(sid, entry);
+  }
+  entry.count++;
+  return entry.count <= UNDO_RATE_LIMIT;
+}
+
+// Periodic cleanup of expired entries (every 5 minutes)
+setInterval(() => {
+  const now = Date.now();
+  for (const [sid, entry] of undoRateMap) {
+    if (now > entry.resetAt) undoRateMap.delete(sid);
+  }
+}, 5 * 60 * 1000);
+
+/* ── DELETE /api/algo/attempts/:id — undo recent submission ── */
+app.delete('/api/algo/attempts/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id) || id <= 0) return res.status(400).json({ error: 'Nieprawidłowe ID.' });
+
+  const sid = req.headers['x-session-id'];
+  if (!sid || typeof sid !== 'string' || sid.trim().length < 2)
+    return res.status(400).json({ error: 'Brak identyfikatora sesji.' });
+
+  if (!checkUndoRate(sid.trim())) {
+    return res.status(429).json({ error: 'Za dużo cofnięć — spróbuj za chwilę.' });
+  }
+
+  try {
+    // Phase 1: Check existence, ownership, age
+    const rows = await db(
+      `SELECT id, session_id,
+              TIMESTAMPDIFF(SECOND, attempted_at, NOW()) AS age_seconds
+       FROM algo_attempts WHERE id = ?`, [id]);
+
+    if (!rows.length || rows[0].session_id !== sid.trim()) {
+      return res.status(404).json({ error: 'Nie znaleziono zgłoszenia.' });
+    }
+
+    if (rows[0].age_seconds > 30) {
+      return res.status(409).json({ error: 'Nie można cofnąć — upłynął limit czasu (30s).' });
+    }
+
+    // Phase 2: Atomic delete with same conditions (prevents race)
+    const result = await db(
+      `DELETE FROM algo_attempts
+       WHERE id = ? AND session_id = ?
+         AND attempted_at >= NOW() - INTERVAL 30 SECOND`, [id, sid.trim()]);
+
+    if (result.affectedRows === 0) {
+      return res.status(409).json({ error: 'Nie można cofnąć — upłynął limit czasu (30s).' });
+    }
+
+    console.log('UNDO: attempt', id, 'deleted by session', sid.trim());
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('UNDO error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.post('/api/sql/attempt', async (req, res) => {
@@ -417,12 +534,12 @@ app.get('/api/stats/detailed/:sid', async (req, res) => {
     const algoPerTask = await db(`
       SELECT
         task_id, task_title,
-        COUNT(*)                                                         AS attempts,
-        SUM(IF(tests_passed >= tests_total AND tests_total > 0, 1, 0))  AS fully_passed,
-        MAX(tests_passed)                                                AS best_passed,
-        MAX(tests_total)                                                 AS tests_total,
-        MAX(duration_ms)                                                 AS best_time_ms,
-        MAX(attempted_at)                                                AS last_attempt
+        COUNT(*)                                                                    AS attempts,
+        COALESCE(SUM(IF(tests_passed >= tests_total AND tests_total > 0, 1, 0)),0)  AS fully_passed,
+        COALESCE(MAX(tests_passed),0)                                               AS best_passed,
+        COALESCE(MAX(tests_total),0)                                                AS tests_total,
+        COALESCE(MAX(duration_ms),0)                                                AS best_time_ms,
+        MAX(attempted_at)                                                            AS last_attempt
       FROM algo_attempts
       WHERE session_id = ?
       GROUP BY task_id, task_title
@@ -432,9 +549,9 @@ app.get('/api/stats/detailed/:sid', async (req, res) => {
     const sqlPerTask = await db(`
       SELECT
         task_id, task_title,
-        COUNT(*)           AS attempts,
-        SUM(is_correct)    AS correct,
-        MAX(attempted_at)  AS last_attempt
+        COUNT(*)                      AS attempts,
+        COALESCE(SUM(is_correct),0)   AS correct,
+        MAX(attempted_at)             AS last_attempt
       FROM sql_attempts
       WHERE session_id = ?
       GROUP BY task_id, task_title
@@ -444,9 +561,9 @@ app.get('/api/stats/detailed/:sid', async (req, res) => {
     const quizPerCat = await db(`
       SELECT
         category,
-        COUNT(*)            AS total,
-        SUM(is_correct)     AS correct,
-        ROUND(AVG(time_ms)) AS avg_ms
+        COUNT(*)                        AS total,
+        COALESCE(SUM(is_correct),0)     AS correct,
+        ROUND(AVG(time_ms))             AS avg_ms
       FROM quiz_results
       WHERE session_id = ?
       GROUP BY category
@@ -461,15 +578,15 @@ app.get('/api/stats/:sid', async (req, res) => {
   const sid = req.params.sid;
   try {
     const [quiz] = await db(
-      'SELECT COUNT(*) as total, SUM(is_correct) as correct, ROUND(AVG(time_ms)) as avg_time_ms FROM quiz_results WHERE session_id=?',
+      'SELECT COUNT(*) as total, COALESCE(SUM(is_correct),0) as correct, ROUND(AVG(time_ms)) as avg_time_ms FROM quiz_results WHERE session_id=?',
       [sid]
     );
     const [algo] = await db(
-      'SELECT COUNT(*) as attempts, SUM(IF(tests_passed>=tests_total AND tests_total>0,1,0)) as fully_passed FROM algo_attempts WHERE session_id=?',
+      'SELECT COUNT(*) as attempts, COALESCE(SUM(IF(tests_passed>=tests_total AND tests_total>0,1,0)),0) as fully_passed FROM algo_attempts WHERE session_id=?',
       [sid]
     );
     const [sql] = await db(
-      'SELECT COUNT(*) as attempts, SUM(is_correct) as correct FROM sql_attempts WHERE session_id=?',
+      'SELECT COUNT(*) as attempts, COALESCE(SUM(is_correct),0) as correct FROM sql_attempts WHERE session_id=?',
       [sid]
     );
     const flashcards = await db(

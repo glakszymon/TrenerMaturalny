@@ -1529,6 +1529,204 @@ details:not([open]) > summary::before { content:'▸ '; }
   text-align: center;
   font-weight: 600;
 }
+
+/* ══════════════════════════════════════════
+   C++ AUTOCOMPLETE — DRACULA THEME
+══════════════════════════════════════════ */
+.CodeMirror-hints {
+  background: #282a36;
+  border: 1px solid #44475a;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  max-height: 20em;
+  overflow-y: auto;
+  padding: 2px 0;
+  z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: #44475a #282a36;
+}
+.CodeMirror-hint {
+  color: #f8f8f2;
+  padding: 4px 8px;
+  cursor: pointer;
+  white-space: pre;
+  line-height: 1.4;
+}
+.CodeMirror-hint:hover {
+  background: #343746;
+}
+li.CodeMirror-hint-active {
+  background: #44475a;
+  color: #f8f8f2;
+}
+.hint-with-icon.CodeMirror-hint {
+  display: flex;
+  align-items: center;
+  padding: 3px 8px;
+}
+.hint-icon {
+  display: inline-block;
+  width: 16px; height: 16px;
+  margin-right: 6px;
+  border-radius: 3px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 16px;
+  flex-shrink: 0;
+}
+.hint-icon-keyword { background: #ff79c6; color: #282a36; }
+.hint-icon-keyword::after { content: "K"; }
+.hint-icon-type { background: #8be9fd; color: #282a36; }
+.hint-icon-type::after { content: "T"; }
+.hint-icon-function { background: #bd93f9; color: #282a36; }
+.hint-icon-function::after { content: "F"; }
+.hint-icon-variable { background: #50fa7b; color: #282a36; }
+.hint-icon-variable::after { content: "V"; }
+.hint-icon-macro { background: #ffb86c; color: #282a36; }
+.hint-icon-macro::after { content: "M"; }
+.hint-label { flex: 1; }
+.hint-detail { color: #6272a4; font-size: .85em; margin-left: 12px; font-style: italic; }
+
+/* ══════════════════════════════════════════
+   CUSTOM STDIN TEXTAREA
+══════════════════════════════════════════ */
+.stdin-section {
+  margin-top: .65rem;
+  border-top: 1px solid var(--border);
+  padding-top: .6rem;
+}
+.stdin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .35rem;
+}
+.stdin-label {
+  font-size: .74rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.stdin-label kbd {
+  font-size: .65rem;
+  background: var(--bg-alt, #f0f0f0);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: .1em .35em;
+  font-family: var(--mono);
+  color: var(--faint);
+  margin-left: .3rem;
+}
+.stdin-actions {
+  display: flex;
+  gap: .3rem;
+}
+.stdin-btn {
+  font-size: .68rem;
+  font-weight: 700;
+  font-family: var(--ui);
+  padding: .2rem .5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-alt, #f6f8fa);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.stdin-btn:hover {
+  background: var(--indigo);
+  color: #fff;
+  border-color: var(--indigo);
+}
+.stdin-btn-clear {
+  padding: .2rem .4rem;
+  font-family: var(--mono);
+}
+.stdin-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--mono);
+  font-size: .78rem;
+  line-height: 1.5;
+  padding: .45rem .6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fafbfc;
+  color: var(--fg);
+  resize: vertical;
+  max-height: 140px;
+  min-height: 2.5rem;
+  transition: border-color .2s, box-shadow .2s;
+}
+.stdin-textarea:focus {
+  outline: none;
+  border-color: var(--indigo);
+  box-shadow: 0 0 0 3px rgba(91,76,245,.12);
+}
+.stdin-textarea::placeholder {
+  color: var(--faint);
+  font-style: italic;
+}
+
+/* Sub-labels on buttons */
+.ebar-btn .btn-sublabel {
+  display: block;
+  font-size: .55rem;
+  font-weight: 600;
+  opacity: .7;
+  margin-top: .05rem;
+  letter-spacing: .02em;
+}
+
+/* ══════════════════════════════════════════
+   UNDO SUBMISSION BUTTON
+══════════════════════════════════════════ */
+.undo-bar {
+  display: none;
+  align-items: center;
+  gap: .6rem;
+  padding: .45rem .75rem;
+  background: #1c1917;
+  border-top: 1px solid #44475a;
+  font-family: var(--ui);
+  font-size: .76rem;
+}
+.undo-bar.on {
+  display: flex;
+}
+.undo-btn {
+  font-family: var(--ui);
+  font-size: .72rem;
+  font-weight: 700;
+  padding: .3rem .7rem;
+  border: 1px solid #fbbf24;
+  border-radius: 5px;
+  background: #422006;
+  color: #fbbf24;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.undo-btn:hover {
+  background: #713f12;
+  border-color: #f59e0b;
+}
+.undo-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+.undo-countdown {
+  color: #a1a1aa;
+  font-size: .7rem;
+  font-family: var(--mono);
+  min-width: 2.5rem;
+}
+.undo-msg {
+  color: #a1a1aa;
+  font-size: .72rem;
+  flex: 1;
+}
 </style>
 </head>
 <body>
@@ -1603,8 +1801,8 @@ details:not([open]) > summary::before { content:'▸ '; }
     <div class="editor-action-bar">
       <span class="editor-tab on" style="cursor:default;font-family:var(--ui);font-weight:800;color:#c9d1d9;font-size:.78rem">⌥ C++</span>
       <div class="editor-spacer"></div>
-      <button class="ebar-btn ebar-run"      id="btnRun"      title="Uruchom kod lokalnie">▷ Uruchom</button>
-      <button class="ebar-btn ebar-submit"   id="btnCheck"    disabled title="Zatwierdź rozwiązanie">✓ Zatwierdź</button>
+      <button class="ebar-btn ebar-run"      id="btnRun"      title="Uruchom z własnymi danymi (Ctrl+Enter)">▷ Uruchom<span class="btn-sublabel">testowe — bez zapisu</span></button>
+      <button class="ebar-btn ebar-submit"   id="btnCheck"    disabled title="Zatwierdź rozwiązanie (Ctrl+Shift+Enter)">✓ Zatwierdź<span class="btn-sublabel">oficjalne testy</span></button>
       <button class="ebar-btn ebar-hint"     id="btnHint"     disabled title="Pokaż podpowiedź">💡 Podpowiedź</button>
       <button class="ebar-btn ebar-solution" id="btnSolution" disabled title="Pokaż wzorcowe rozwiązanie">🏆 Rozwiązanie</button>
       <button class="ebar-btn ebar-clear"    id="btnReset"    title="Wyczyść edytor">✕ clear</button>
@@ -1618,6 +1816,11 @@ details:not([open]) > summary::before { content:'▸ '; }
         <button id="btnClearTerminal" style="background:none;border:none;color:#6272a4;cursor:pointer;font-size:.75rem;font-family:var(--mono)">clear</button>
       </div>
       <div class="terminal-body" id="terminalBody"><span class="t-dim">// Tutaj pojawią się wyniki...</span></div>
+      <div class="undo-bar" id="undoBar">
+        <button class="undo-btn" id="btnUndo">↩ Cofnij</button>
+        <span class="undo-countdown" id="undoCountdown">30s</span>
+        <span class="undo-msg">Możesz cofnąć ostatnie zgłoszenie</span>
+      </div>
     </div>
   </div>
 
@@ -1655,6 +1858,16 @@ details:not([open]) > summary::before { content:'▸ '; }
             <div class="io-label">Wyjście</div>
             <pre class="io-pre" id="algoExOut">—</pre>
           </div>
+        </div>
+        <div class="stdin-section">
+          <div class="stdin-header">
+            <span class="stdin-label">Własne dane wejściowe <kbd>Ctrl+I</kbd></span>
+            <div class="stdin-actions">
+              <button class="stdin-btn" id="btnPasteExample" title="Wklej przykładowe dane">📋 Wklej przykład</button>
+              <button class="stdin-btn stdin-btn-clear" id="btnClearStdin" title="Wyczyść">✕</button>
+            </div>
+          </div>
+          <textarea id="algoStdin" class="stdin-textarea" rows="3" placeholder="Wpisz dane wejściowe dla programu... (puste = brak stdin)" spellcheck="false"></textarea>
         </div>
       </div>
       
@@ -2577,6 +2790,7 @@ async function apiPost(path,body){try{var r=await fetch(apiBase()+path,{method:'
 async function apiGet(path){try{var r=await fetch(apiBase()+path);return r.json();}catch(e){return{error:e.message};}}
 async function apiPut(path,body){try{var r=await fetch(apiBase()+path,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}catch(e){return{error:e.message};}}
 async function apiDel(path){try{var r=await fetch(apiBase()+path,{method:'DELETE'});return r.json();}catch(e){return{error:e.message};}}
+async function apiDeleteWithSession(path,sid){try{var r=await fetch(apiBase()+path,{method:'DELETE',headers:{'X-Session-Id':sid}});return{status:r.status,data:await r.json()};}catch(e){return{status:0,data:{error:e.message}};}}
 
 async function loadQuizQuestionsFromDB() {
   if (QUIZ_LOADED) return;
@@ -2735,6 +2949,143 @@ var cppEditor, sqlEditor;
 var algoTasks = [];
 var currentTask = null;
 
+/* ── C++ Autocomplete: keyword list with categories ── */
+var CPP_KEYWORDS = [
+  // C++ reserved words
+  {text:'auto',kind:'keyword'},{text:'bool',kind:'keyword'},{text:'break',kind:'keyword'},
+  {text:'case',kind:'keyword'},{text:'catch',kind:'keyword'},{text:'char',kind:'keyword'},
+  {text:'class',kind:'keyword'},{text:'const',kind:'keyword'},{text:'constexpr',kind:'keyword'},
+  {text:'continue',kind:'keyword'},{text:'do',kind:'keyword'},{text:'double',kind:'keyword'},
+  {text:'else',kind:'keyword'},{text:'enum',kind:'keyword'},{text:'false',kind:'keyword'},
+  {text:'float',kind:'keyword'},{text:'for',kind:'keyword'},{text:'if',kind:'keyword'},
+  {text:'int',kind:'keyword'},{text:'long',kind:'keyword'},{text:'namespace',kind:'keyword'},
+  {text:'new',kind:'keyword'},{text:'noexcept',kind:'keyword'},{text:'nullptr',kind:'keyword'},
+  {text:'return',kind:'keyword'},{text:'short',kind:'keyword'},{text:'signed',kind:'keyword'},
+  {text:'sizeof',kind:'keyword'},{text:'static',kind:'keyword'},{text:'struct',kind:'keyword'},
+  {text:'switch',kind:'keyword'},{text:'template',kind:'keyword'},{text:'this',kind:'keyword'},
+  {text:'throw',kind:'keyword'},{text:'true',kind:'keyword'},{text:'try',kind:'keyword'},
+  {text:'typedef',kind:'keyword'},{text:'typename',kind:'keyword'},{text:'unsigned',kind:'keyword'},
+  {text:'using',kind:'keyword'},{text:'virtual',kind:'keyword'},{text:'void',kind:'keyword'},
+  {text:'volatile',kind:'keyword'},{text:'while',kind:'keyword'},
+  // STL types
+  {text:'string',kind:'type'},{text:'vector',kind:'type'},{text:'map',kind:'type'},
+  {text:'set',kind:'type'},{text:'pair',kind:'type'},{text:'array',kind:'type'},
+  {text:'stack',kind:'type'},{text:'queue',kind:'type'},{text:'deque',kind:'type'},
+  {text:'priority_queue',kind:'type'},{text:'list',kind:'type'},
+  // STL functions
+  {text:'sort',kind:'function'},{text:'reverse',kind:'function'},{text:'find',kind:'function'},
+  {text:'count',kind:'function'},{text:'min',kind:'function'},{text:'max',kind:'function'},
+  {text:'swap',kind:'function'},{text:'abs',kind:'function'},{text:'push_back',kind:'function'},
+  {text:'pop_back',kind:'function'},{text:'size',kind:'function'},{text:'empty',kind:'function'},
+  {text:'begin',kind:'function'},{text:'end',kind:'function'},{text:'front',kind:'function'},
+  {text:'back',kind:'function'},{text:'first',kind:'variable'},{text:'second',kind:'variable'},
+  {text:'insert',kind:'function'},{text:'erase',kind:'function'},{text:'clear',kind:'function'},
+  {text:'length',kind:'function'},{text:'substr',kind:'function'},{text:'stoi',kind:'function'},
+  {text:'to_string',kind:'function'},{text:'getline',kind:'function'},{text:'ignore',kind:'function'},
+  // I/O
+  {text:'cout',kind:'variable'},{text:'cin',kind:'variable'},{text:'cerr',kind:'variable'},
+  {text:'endl',kind:'variable'},{text:'fixed',kind:'variable'},{text:'setprecision',kind:'function'},
+  {text:'setw',kind:'function'},{text:'ifstream',kind:'type'},{text:'ofstream',kind:'type'},
+  // Headers (for #include)
+  {text:'iostream',kind:'macro'},{text:'fstream',kind:'macro'},{text:'sstream',kind:'macro'},
+  {text:'algorithm',kind:'macro'},{text:'cmath',kind:'macro'},{text:'cstdlib',kind:'macro'},
+  {text:'iomanip',kind:'macro'},{text:'numeric',kind:'macro'},
+  // Constants
+  {text:'INT_MAX',kind:'macro'},{text:'INT_MIN',kind:'macro'},{text:'npos',kind:'macro'},
+  // Common identifiers
+  {text:'include',kind:'macro'},{text:'define',kind:'macro'},{text:'main',kind:'function'},{text:'std',kind:'variable'}
+];
+
+/* ── Build a lookup set for fast dedup ── */
+var CPP_KEYWORD_SET = {};
+CPP_KEYWORDS.forEach(function(k) { CPP_KEYWORD_SET[k.text] = true; });
+
+/* ── Icon class map ── */
+var HINT_ICON_CLASS = {
+  keyword:  'hint-icon-keyword',
+  type:     'hint-icon-type',
+  'function': 'hint-icon-function',
+  variable: 'hint-icon-variable',
+  macro:    'hint-icon-macro'
+};
+
+/* ── Register C++ hint helper ── */
+CodeMirror.registerHelper('hint', 'text/x-c++src', function(cm) {
+  var cur = cm.getCursor();
+  var token = cm.getTokenAt(cur);
+  var tokenType = token.type;
+
+  // Skip hints inside strings, comments, preprocessor directives
+  if (tokenType === 'string' || tokenType === 'comment' || tokenType === 'meta') {
+    return null;
+  }
+
+  // Get the current word fragment
+  var word = token.string;
+  var start = token.start;
+  var end = token.end;
+
+  // If token is punctuation (type=null) or empty, look for short prefix
+  if (!tokenType && !/\w/.test(word)) {
+    return null;
+  }
+
+  var prefix = word.toLowerCase();
+  var matches = [];
+
+  // 1. Match curated keywords
+  if (prefix.length >= 1) {
+    CPP_KEYWORDS.forEach(function(kw) {
+      if (kw.text.toLowerCase().indexOf(prefix) === 0 && kw.text !== word) {
+        matches.push(kw);
+      }
+    });
+  }
+
+  // 2. Document word scanning (anyword-style) — exclude the current word
+  var docText = cm.getValue();
+  var wordRegex = /\b[a-zA-Z_]\w{2,}\b/g;
+  var docWords = {};
+  var m;
+  while ((m = wordRegex.exec(docText)) !== null) {
+    var w = m[0];
+    if (!CPP_KEYWORD_SET[w] && !docWords[w] && w !== word && w.toLowerCase().indexOf(prefix) === 0) {
+      docWords[w] = true;
+      matches.push({text: w, kind: 'variable'});
+    }
+  }
+
+  if (matches.length === 0) return null;
+
+  // Sort: exact prefix first, then alphabetically
+  matches.sort(function(a, b) {
+    var aExact = a.text.toLowerCase().indexOf(prefix) === 0 ? 0 : 1;
+    var bExact = b.text.toLowerCase().indexOf(prefix) === 0 ? 0 : 1;
+    if (aExact !== bExact) return aExact - bExact;
+    return a.text.localeCompare(b.text);
+  });
+
+  return {
+    list: matches.map(function(item) {
+      return {
+        text: item.text,
+        render: function(el, self, data) {
+          el.className += ' hint-with-icon';
+          var icon = document.createElement('span');
+          icon.className = 'hint-icon ' + (HINT_ICON_CLASS[item.kind] || 'hint-icon-variable');
+          el.appendChild(icon);
+          var label = document.createElement('span');
+          label.className = 'hint-label';
+          label.textContent = item.text;
+          el.appendChild(label);
+        }
+      };
+    }),
+    from: CodeMirror.Pos(cur.line, start),
+    to: CodeMirror.Pos(cur.line, end)
+  };
+});
+
 function initEditor() {
   // ── C++ editor ──
   cppEditor = CodeMirror.fromTextArea($('cppEditor'), {
@@ -2747,7 +3098,9 @@ function initEditor() {
     autoCloseBrackets: true,
     matchBrackets:    true,
     lineWrapping:     false,
+    hintOptions: { completeSingle: false },
     extraKeys: {
+      'Ctrl-Space':   'autocomplete',
       'Ctrl-/':       'toggleComment',
       'Cmd-/':        'toggleComment',
       'Tab': function(cm) {
@@ -2764,6 +3117,41 @@ function initEditor() {
   cppEditor.setValue(savedCpp !== null ? savedCpp : CPP_DEFAULT);
   cppEditor.on('change', function() { localStorage.setItem('matura_cpp_code', cppEditor.getValue()); });
   setTimeout(function() { cppEditor.refresh(); }, 100);
+
+  // ── C++ auto-trigger hints on typing ──
+  var cppHintTimer = null;
+  cppEditor.on('inputRead', function(cm, change) {
+    if (cm.state.completionActive) return;
+    var cur = cm.getCursor();
+    var token = cm.getTokenAt(cur);
+    var ttype = token.type;
+
+    // Skip strings, comments, preprocessor
+    if (ttype === 'string' || ttype === 'comment' || ttype === 'meta') return;
+
+    // Check for immediate triggers: ::, ., ->
+    var line = cm.getLine(cur.line);
+    var before = line.slice(Math.max(0, cur.ch - 2), cur.ch);
+    var immediate = (before === '::' || before.slice(-1) === '.' ||
+                     before === '->');
+
+    if (immediate) {
+      clearTimeout(cppHintTimer);
+      cm.showHint({ completeSingle: false });
+      return;
+    }
+
+    // Debounced trigger after 2+ alphanumeric chars
+    var word = token.string;
+    if (word.length >= 2 && /^\w+$/.test(word)) {
+      clearTimeout(cppHintTimer);
+      cppHintTimer = setTimeout(function() {
+        if (!cm.state.completionActive) {
+          cm.showHint({ completeSingle: false });
+        }
+      }, 150);
+    }
+  });
 
   // ── SQL editor ──
   sqlEditor = CodeMirror.fromTextArea($('sqlEditor'), {
@@ -3010,6 +3398,12 @@ async function loadSQLHistory_task(taskId) {
 }
 
 function selectAlgoTask(t){
+  // Hide undo bar when switching tasks
+  if (typeof hideUndoBar === 'function') hideUndoBar();
+  // Save current stdin before switching
+  if (currentTask && $('algoStdin')) {
+    sessionStorage.setItem('stdin_task_' + currentTask.id, $('algoStdin').value);
+  }
   currentTask = t;
   // Sync select
   var sel = $('algoTaskSelect');
@@ -3026,9 +3420,13 @@ function selectAlgoTask(t){
   $('btnSolution').disabled = false;
   $('btnRun').disabled     = false;
   $('testProgressWrap').style.display = 'none';
+  // Restore saved stdin for this task (or clear)
+  var savedStdin = sessionStorage.getItem('stdin_task_' + t.id);
+  $('algoStdin').value = savedStdin || '';
   termClear();
   termLine('// Zadanie #' + t.id + ': ' + t.title, 't-dim');
   termLine('// Wpisz kod i kliknij ▷ Uruchom lub ✓ Zatwierdź', 't-dim');
+  termLine('// Ctrl+Enter = uruchom · Ctrl+Shift+Enter = zatwierdź', 't-dim');
   resetCode();
   // Auto-start stopera
   if (stopwatches['swDisplay']) stopwatches['swDisplay'].restart();
@@ -3037,56 +3435,62 @@ function selectAlgoTask(t){
   loadAlgoHistory(t.id);
 }
 
-/* ── Uruchom (bez zapisu do bazy) ── */
-$('btnRun').addEventListener('click', async function() {
+/* ── Uruchom z własnymi danymi (bez zapisu do bazy) ── */
+function doRun() {
   if (!currentTask) { toast('Najpierw wybierz zadanie', 'err'); return; }
   var code = cppEditor.getValue().trim();
   if (code.length < 10) { toast('Kod jest zbyt krótki', 'err'); return; }
-  var btn = this;
+  var btn = $('btnRun');
   btn.disabled = true;
-  btn.textContent = '⟳ Uruchamianie...';
+  btn.innerHTML = '⟳ Uruchamianie...<span class="btn-sublabel">testowe — bez zapisu</span>';
+  var stdinVal = $('algoStdin').value;
   termClear();
-  termLine('$ Kompilowanie...', 't-dim');
-  try {
-    var data = await apiPost('/api/algo/submit', {
-      session_id: SID,
-      task_id:    currentTask.id,
-      code:       code,
-      run_only:   true   // nie zapisuj do bazy
-    });
+  termLine('── Uruchomienie z danymi ──────────────────', 't-dim');
+  if (stdinVal) {
+    termLine('stdin:', 't-dim');
+    stdinVal.split('\n').forEach(function(l) { termLine('  ' + l, ''); });
+  } else {
+    termLine('stdin: (puste)', 't-dim');
+  }
+  termLine('───────────────────────────────────────────', 't-dim');
+  termLine('Kompilowanie...', 't-dim');
+  apiPost('/api/algo/run', { code: code, stdin: stdinVal }).then(function(data) {
+    if (data.error) {
+      termLine('Błąd: ' + data.error, 't-err');
+      return;
+    }
     if (!data.compiled) {
       termLine('✗ Błąd kompilacji:', 't-err');
       (data.compile_error || '').split('\n').forEach(function(l) {
         if (l.trim()) termLine('  ' + l, 't-err');
       });
     } else {
-      termLine('✓ Skompilowano pomyślnie', 't-ok');
-      var ex = currentTask.ex_input || '';
-      termLine('$ ./program <<< "' + ex.replace(/\n/g, '⏎') + '"', 't-dim');
-      var first = (data.results || []).find(function(r) { return !r.hidden; });
-      if (first) {
-        termLine('', '');
-        if (first.timedOut) {
-          termLine('[TLE] Przekroczono limit czasu (3s)', 't-warn');
-        } else {
-          var output = first.got || '(brak wyjścia)';
-          termHTML('<pre style="color:#86efac;font-family:var(--mono);font-size:.8rem;line-height:1.6;white-space:pre;margin:0;padding:0">' + escH(output) + '</pre>');
-        }
-        if (first.stderr) {
-          termLine('', '');
-          termLine('stderr:', 't-warn');
-          first.stderr.split('\n').forEach(function(l) { if (l.trim()) termLine('  ' + l, 't-warn'); });
-        }
-        termLine('', '');
-        termLine('Czas: ' + first.time_ms + ' ms', 't-dim');
+      termLine('', '');
+      if (data.timedOut) {
+        termLine('[TLE] Przekroczono limit czasu (3s)', 't-warn');
       } else {
-        termLine('(brak widocznych testów — wynik skompilowany ale nie uruchomiony)', 't-warn');
+        termLine('stdout:', 't-dim');
+        var output = data.stdout || '(brak wyjścia)';
+        termHTML('<pre style="color:#86efac;font-family:var(--mono);font-size:.8rem;line-height:1.6;white-space:pre;margin:0;padding:0 0 0 .5rem">' + escH(output) + '</pre>');
       }
+      if (data.stderr) {
+        termLine('', '');
+        termLine('stderr:', 't-warn');
+        data.stderr.split('\n').forEach(function(l) { if (l.trim()) termLine('  ' + l, 't-warn'); });
+      }
+      termLine('', '');
+      termLine('── Czas: ' + data.time_ms + ' ms ────────────────────────', 't-dim');
     }
-  } catch (e) { termLine('Błąd połączenia: ' + e.message, 't-err'); }
-  finally { btn.disabled = false; btn.textContent = '▷ Uruchom'; }
-});
-
+    termLine('', '');
+    termLine('ℹ Wynik testowy — nie zapisano. Kliknij ✓ Zatwierdź, aby zapisać.', 't-dim');
+  }).catch(function(e) {
+    termLine('Błąd połączenia: ' + e.message, 't-err');
+  }).finally(function() {
+    btn.disabled = false;
+    btn.innerHTML = '▷ Uruchom<span class="btn-sublabel">testowe — bez zapisu</span>';
+  });
+}
+$('btnRun').addEventListener('click', doRun);
 /* ── Zatwierdź i testuj wszystkie testy — zapisuje do bazy ── */
 $('btnCheck').addEventListener('click', async function() {
   if (!currentTask) return;
@@ -3094,7 +3498,7 @@ $('btnCheck').addEventListener('click', async function() {
   if (code.length < 20) { toast('Kod jest zbyt krótki', 'err'); return; }
   var btn = this;
   btn.disabled = true;
-  btn.textContent = '⟳ Testowanie...';
+  btn.innerHTML = '⟳ Testowanie...<span class="btn-sublabel">oficjalne testy</span>';
   termClear();
   termLine('$ Kompilowanie i uruchamianie testów...', 't-dim');
   var durationMs = stopwatches['swDisplay'] ? stopwatches['swDisplay'].getSec() * 1000 : 0;
@@ -3188,12 +3592,125 @@ $('btnCheck').addEventListener('click', async function() {
     // Odśwież historię
     if (currentTask) loadAlgoHistory(currentTask.id);
 
+    // Show undo bar if attempt was saved
+    if (data.attempt_id) {
+      showUndoBar(data.attempt_id);
+    }
+
   } catch (e) {
     termLine('Błąd połączenia: ' + e.message, 't-err');
   } finally {
     btn.disabled = false;
-    btn.textContent = '✓ Zatwierdź';
+    btn.innerHTML = '✓ Zatwierdź<span class="btn-sublabel">oficjalne testy</span>';
   }
+});
+
+/* ── Stdin: paste example & clear buttons ── */
+$('btnPasteExample').addEventListener('click', function() {
+  if (currentTask && currentTask.ex_input) {
+    $('algoStdin').value = currentTask.ex_input;
+    $('algoStdin').focus();
+  } else {
+    toast('Brak przykładowych danych', 'err');
+  }
+});
+$('btnClearStdin').addEventListener('click', function() {
+  $('algoStdin').value = '';
+  $('algoStdin').focus();
+});
+
+/* ── Keyboard shortcuts for algo section ── */
+document.addEventListener('keydown', function(e) {
+  // Only active in algo section
+  var algoSec = $('sec-algo');
+  if (!algoSec || !algoSec.classList.contains('on')) return;
+
+  // Ctrl+Enter → Run
+  if (e.ctrlKey && !e.shiftKey && e.key === 'Enter') {
+    e.preventDefault();
+    doRun();
+    return;
+  }
+  // Ctrl+Shift+Enter → Submit
+  if (e.ctrlKey && e.shiftKey && e.key === 'Enter') {
+    e.preventDefault();
+    $('btnCheck').click();
+    return;
+  }
+  // Ctrl+I → Focus stdin
+  if (e.ctrlKey && !e.shiftKey && (e.key === 'i' || e.key === 'I')) {
+    e.preventDefault();
+    $('algoStdin').focus();
+    return;
+  }
+});
+// Escape in stdin → back to editor
+$('algoStdin').addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    cppEditor.focus();
+  }
+  // Ctrl+Enter from stdin textarea also runs
+  if (e.ctrlKey && !e.shiftKey && e.key === 'Enter') {
+    e.preventDefault();
+    doRun();
+  }
+});
+
+/* ── Undo submission logic ── */
+var undoState = { attemptId: null, timer: null, countdownInterval: null };
+
+function showUndoBar(attemptId) {
+  hideUndoBar(); // clear any previous
+  undoState.attemptId = attemptId;
+  var bar = $('undoBar');
+  var countdown = $('undoCountdown');
+  var remaining = 30;
+  bar.classList.add('on');
+  countdown.textContent = remaining + 's';
+
+  undoState.countdownInterval = setInterval(function() {
+    remaining--;
+    countdown.textContent = remaining + 's';
+    if (remaining <= 0) hideUndoBar();
+  }, 1000);
+
+  undoState.timer = setTimeout(function() {
+    hideUndoBar();
+  }, 30000);
+}
+
+function hideUndoBar() {
+  undoState.attemptId = null;
+  if (undoState.timer) { clearTimeout(undoState.timer); undoState.timer = null; }
+  if (undoState.countdownInterval) { clearInterval(undoState.countdownInterval); undoState.countdownInterval = null; }
+  var bar = $('undoBar');
+  if (bar) bar.classList.remove('on');
+}
+
+$('btnUndo').addEventListener('click', async function() {
+  if (!undoState.attemptId) return;
+  var btn = this;
+  btn.disabled = true;
+  btn.textContent = '↩ Cofam...';
+  var attemptId = undoState.attemptId;
+  var resp = await apiDeleteWithSession('/api/algo/attempts/' + attemptId, SID);
+  if (resp.status === 200 && resp.data.ok) {
+    toast('Cofnięto ostatnie zgłoszenie', 'ok');
+    hideUndoBar();
+    if (currentTask) loadAlgoHistory(currentTask.id);
+  } else if (resp.status === 409) {
+    toast('Nie można cofnąć — upłynął limit czasu', 'err');
+    hideUndoBar();
+  } else if (resp.status === 429) {
+    toast('Za dużo cofnięć — spróbuj za chwilę', 'err');
+    hideUndoBar();
+  } else {
+    toast(resp.data.error || 'Błąd cofania', 'err');
+    hideUndoBar();
+  }
+  btn.disabled = false;
+  btn.textContent = '↩ Cofnij';
 });
 
 /* ── Podpowiedź ── */
