@@ -76,6 +76,24 @@ async function runMigrations() {
       pin        VARCHAR(128) NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`,
+    // R23: Allow NULLs on FK columns that used to default to 0
+    `ALTER TABLE quiz_results MODIFY COLUMN question_id INT DEFAULT NULL`,
+    `ALTER TABLE flashcard_progress MODIFY COLUMN question_id INT DEFAULT NULL`,
+    `ALTER TABLE sql_attempts MODIFY COLUMN task_id INT DEFAULT NULL`,
+    // Fix legacy data: convert orphan 0 values to NULL before adding FK constraints
+    `UPDATE quiz_results SET question_id = NULL WHERE question_id = 0`,
+    `UPDATE flashcard_progress SET question_id = NULL WHERE question_id = 0`,
+    `UPDATE sql_attempts SET task_id = NULL WHERE task_id = 0`,
+    // R23: Foreign key constraints (idempotent — errors ignored if already present)
+    `ALTER TABLE algo_attempts ADD CONSTRAINT fk_algo_attempts_task FOREIGN KEY (task_id) REFERENCES algo_tasks(id) ON DELETE CASCADE`,
+    `ALTER TABLE quiz_results ADD CONSTRAINT fk_quiz_results_question FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE SET NULL`,
+    `ALTER TABLE flashcard_progress ADD CONSTRAINT fk_flashcard_question FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE SET NULL`,
+    `ALTER TABLE sql_attempts ADD CONSTRAINT fk_sql_attempts_task_ref FOREIGN KEY (task_id_ref) REFERENCES sql_tasks(id) ON DELETE SET NULL`,
+    `ALTER TABLE sql_attempts ADD CONSTRAINT fk_sql_attempts_scenario FOREIGN KEY (scenario_id) REFERENCES sql_scenarios(id) ON DELETE SET NULL`,
+    // R24: Ensure quiz_questions.correct is always 0-3 (A/B/C/D)
+    `ALTER TABLE quiz_questions ADD CONSTRAINT chk_correct CHECK (correct BETWEEN 0 AND 3)`,
+    // R32: Remove redundant index (session_id already has a UNIQUE constraint)
+    `ALTER TABLE sessions DROP INDEX IF EXISTS idx_session`,
   ];
   for (const sql of migrations) {
     try { await db(sql); }
@@ -159,16 +177,24 @@ app.post('/api/auth/login', async (req, res) => {
   const cleanPin  = pin.trim();
 
   try {
-    const rows = await db('SELECT pin FROM users WHERE nick = ?', [cleanNick]);
-
-    if (rows.length === 0) {
-      // Nowy użytkownik — rejestracja
+    // Try INSERT first to avoid SELECT→INSERT race condition (TOCTOU).
+    // If nick is new, the INSERT succeeds. If nick already exists, MariaDB
+    // throws errno 1062 (ER_DUP_ENTRY) which we catch below.
+    try {
       await db('INSERT INTO users (nick, pin) VALUES (?, ?)', [cleanNick, cleanPin]);
       await db('INSERT IGNORE INTO sessions (session_id) VALUES (?)', [cleanNick]).catch(() => {});
       return res.json({ ok: true, created: true });
+    } catch (insertErr) {
+      // Not a duplicate-key error → rethrow
+      if (insertErr.errno !== 1062) throw insertErr;
     }
 
-    // Istniejący użytkownik — weryfikacja PINu
+    // Nick already exists — verify PIN
+    const rows = await db('SELECT pin FROM users WHERE nick = ?', [cleanNick]);
+    if (!rows.length) {
+      // Shouldn't happen, but defend against concurrent DELETE
+      return res.status(409).json({ error: 'Spróbuj ponownie.' });
+    }
     if (rows[0].pin !== cleanPin) {
       return res.status(401).json({ error: 'Nieprawidłowy PIN.' });
     }
@@ -249,32 +275,44 @@ app.post('/api/algo/submit', async (req, res) => {
   const passed_count = results.filter(r => r.passed).length;
 
   if (session_id && !run_only) {
+    let conn;
     try {
       await ensureSession(session_id);
-      const ins = await db(
+      conn = await pool.getConnection();
+      await conn.beginTransaction();
+      const ins = await conn.query(
         'INSERT INTO algo_attempts (session_id, task_id, task_title, code, tests_total, tests_passed, duration_ms) VALUES (?,?,?,?,?,?,?)',
         [session_id, task_id, taskRow.title, code, tests.length, passed_count, duration_ms || 0]
       );
       const attempt_id = ins.insertId;
       for (const r of results) {
-        await db(
+        await conn.query(
           'INSERT INTO algo_test_results (attempt_id, test_name, input_data, expected, got, passed, time_ms) VALUES (?,?,?,?,?,?,?)',
           [attempt_id, r.name, r.input, r.expected, r.got, r.passed ? 1 : 0, r.time_ms]
         );
       }
-    } catch (e) { console.error('DB write algo:', e.message); }
+      await conn.commit();
+    } catch (e) {
+      if (conn) try { await conn.rollback(); } catch (_) {}
+      console.error('DB write algo:', e.message);
+    } finally {
+      if (conn) conn.end();   // mariadb v2: releases connection back to pool
+    }
   }
 
   res.json({ compiled: true, tests_total: tests.length, tests_passed: passed_count, results });
 });
 
 app.post('/api/sql/attempt', async (req, res) => {
-  const { session_id, task_id, task_title, query, is_correct } = req.body;
+  // Legacy endpoint — kept for backward compatibility.
+  // SECURITY: is_correct from client body is IGNORED. Use /api/sql/submit
+  // for server-verified correctness. This endpoint records attempts only.
+  const { session_id, task_id, task_title, query } = req.body;
   if (!session_id) return res.status(400).json({ error: 'Brak session_id.' });
   try {
     await ensureSession(session_id);
-    await db('INSERT INTO sql_attempts (session_id,task_id,task_title,query,is_correct) VALUES (?,?,?,?,?)',
-      [session_id, task_id||0, task_title||'', query||'', is_correct?1:0]);
+    await db('INSERT INTO sql_attempts (session_id,task_id,task_title,query,is_correct) VALUES (?,?,?,?,0)',
+      [session_id, task_id||null, task_title||'', query||'']);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -325,8 +363,8 @@ app.put('/api/quiz/questions/:id', async (req, res) => {
   const { category, question, answer_full, opt_a, opt_b, opt_c, opt_d, correct, is_active } = req.body;
   if (!category || !question || !opt_a || !opt_b || !opt_c || !opt_d)
     return res.status(400).json({ error: 'Brak wymaganych pól pytania.' });
-  const id = parseInt(req.params.id);
-  if (!id || isNaN(id)) return res.status(400).json({ error: 'Nieprawidłowe id.' });
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Nieprawidłowe id.' });
   const corr = parseInt(correct);
   if (isNaN(corr) || corr < 0 || corr > 3)
     return res.status(400).json({ error: 'correct musi być 0–3.' });
@@ -343,7 +381,8 @@ app.put('/api/quiz/questions/:id', async (req, res) => {
 /* DELETE /api/quiz/questions/:id – usuń pytanie */
 app.delete('/api/quiz/questions/:id', async (req, res) => {
   try {
-    await db('DELETE FROM quiz_questions WHERE id=?', [req.params.id]);
+    const result = await db('DELETE FROM quiz_questions WHERE id=?', [req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Pytanie nie istnieje.' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -354,7 +393,7 @@ app.post('/api/quiz/result', async (req, res) => {
   try {
     await ensureSession(session_id);
     await db('INSERT INTO quiz_results (session_id,question_id,category,question_text,is_correct,time_ms) VALUES (?,?,?,?,?,?)',
-      [session_id, question_id||0, category||'', question_text||'', is_correct?1:0, time_ms||0]);
+      [session_id, question_id||null, category||'', question_text||'', is_correct?1:0, time_ms||0]);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -366,7 +405,7 @@ app.post('/api/flashcard/seen', async (req, res) => {
     await ensureSession(session_id);
     await db(`INSERT INTO flashcard_progress (session_id,question_id,seen_count,correct_count) VALUES (?,?,1,?)
       ON DUPLICATE KEY UPDATE seen_count=seen_count+1, correct_count=correct_count+IF(?,1,0), last_seen=CURRENT_TIMESTAMP`,
-      [session_id, question_id||0, correct?1:0, correct?1:0]);
+      [session_id, question_id||null, correct?1:0, correct?1:0]);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -499,8 +538,8 @@ app.post('/api/tasks', async (req, res) => {
 app.put('/api/tasks/:id', async (req, res) => {
   const { title, difficulty, description, hint, ex_input, ex_output, solution } = req.body;
   if (!title || !description) return res.status(400).json({ error: 'Brak tytułu lub opisu.' });
-  const id = parseInt(req.params.id);
-  if (!id || isNaN(id)) return res.status(400).json({ error: 'Nieprawidłowe id.' });
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Nieprawidłowe id.' });
   try {
     const result = await db(
       'UPDATE algo_tasks SET title=?, difficulty=?, description=?, hint=?, ex_input=?, ex_output=?, solution=? WHERE id=?',
@@ -514,7 +553,8 @@ app.put('/api/tasks/:id', async (req, res) => {
 /* DELETE /api/tasks/:id – usuń zadanie (kaskadowo usuwa testy) */
 app.delete('/api/tasks/:id', async (req, res) => {
   try {
-    await db('DELETE FROM algo_tasks WHERE id=?', [req.params.id]);
+    const result = await db('DELETE FROM algo_tasks WHERE id=?', [req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Zadanie nie istnieje.' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -538,7 +578,7 @@ app.post('/api/admin/tests', async (req, res) => {
   try {
     const r = await db(
       'INSERT INTO algo_task_tests (task_id, test_name, input_data, expected, is_hidden) VALUES (?,?,?,?,?)',
-      [task_id, test_name, input_data || '', expected || '', is_hidden || 0]
+      [task_id, test_name, input_data || '', expected || '', is_hidden ? 1 : 0]
     );
     res.json({ ok: true, id: r.insertId });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -547,7 +587,8 @@ app.post('/api/admin/tests', async (req, res) => {
 /* DELETE /api/admin/tests/:id – usuń test */
 app.delete('/api/admin/tests/:id', async (req, res) => {
   try {
-    await db('DELETE FROM algo_task_tests WHERE id=?', [req.params.id]);
+    const result = await db('DELETE FROM algo_task_tests WHERE id=?', [req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Test nie istnieje.' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -556,8 +597,8 @@ app.delete('/api/admin/tests/:id', async (req, res) => {
 app.put('/api/admin/tests/:id', async (req, res) => {
   const { test_name, input_data, expected, is_hidden } = req.body;
   if (!test_name) return res.status(400).json({ error: 'Brak nazwy testu.' });
-  const id = parseInt(req.params.id);
-  if (!id || isNaN(id)) return res.status(400).json({ error: 'Nieprawidłowe id.' });
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Nieprawidłowe id.' });
   try {
     const result = await db(
       'UPDATE algo_task_tests SET test_name=?, input_data=?, expected=?, is_hidden=? WHERE id=?',
@@ -621,8 +662,8 @@ app.post('/api/sql/scenarios', async (req, res) => {
 app.put('/api/sql/scenarios/:id', async (req, res) => {
   const { name, description, ddl, seed, is_active } = req.body;
   if (!name || !ddl) return res.status(400).json({ error: 'Brak nazwy lub DDL.' });
-  const id = parseInt(req.params.id);
-  if (!id || isNaN(id)) return res.status(400).json({ error: 'Nieprawidłowe id.' });
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Nieprawidłowe id.' });
   try {
     const result = await db(
       'UPDATE sql_scenarios SET name=?, description=?, ddl=?, seed=?, is_active=? WHERE id=?',
@@ -636,7 +677,8 @@ app.put('/api/sql/scenarios/:id', async (req, res) => {
 /* DELETE /api/sql/scenarios/:id – usuń scenariusz (kaskadowo usuwa zadania) */
 app.delete('/api/sql/scenarios/:id', async (req, res) => {
   try {
-    await db('DELETE FROM sql_scenarios WHERE id=?', [req.params.id]);
+    const result = await db('DELETE FROM sql_scenarios WHERE id=?', [req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Scenariusz nie istnieje.' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -660,8 +702,8 @@ app.put('/api/sql/tasks/:id', async (req, res) => {
   const { scenario_id, title, difficulty, description, hint, solution } = req.body;
   if (!title || !description || !solution)
     return res.status(400).json({ error: 'Brak tytułu, opisu lub rozwiązania.' });
-  const id = parseInt(req.params.id);
-  if (!id || isNaN(id)) return res.status(400).json({ error: 'Nieprawidłowe id.' });
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Nieprawidłowe id.' });
   try {
     const result = await db(
       'UPDATE sql_tasks SET scenario_id=?, title=?, difficulty=?, description=?, hint=?, solution=? WHERE id=?',
@@ -675,7 +717,8 @@ app.put('/api/sql/tasks/:id', async (req, res) => {
 /* DELETE /api/sql/tasks/:id – usuń zadanie SQL */
 app.delete('/api/sql/tasks/:id', async (req, res) => {
   try {
-    await db('DELETE FROM sql_tasks WHERE id=?', [req.params.id]);
+    const result = await db('DELETE FROM sql_tasks WHERE id=?', [req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Zadanie SQL nie istnieje.' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -690,7 +733,7 @@ app.post('/api/sql/submit', async (req, res) => {
   let taskRow;
   try {
     const rows = await db(
-      'SELECT t.id,t.title,t.solution,s.ddl,s.seed FROM sql_tasks t JOIN sql_scenarios s ON t.scenario_id=s.id WHERE t.id=? AND t.is_active=1',
+      'SELECT t.id,t.title,t.solution,t.scenario_id,s.ddl,s.seed FROM sql_tasks t JOIN sql_scenarios s ON t.scenario_id=s.id WHERE t.id=? AND t.is_active=1',
       [task_id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Zadanie nie istnieje.' });
@@ -704,10 +747,13 @@ app.post('/api/sql/submit', async (req, res) => {
 
   try {
     const sqliteDb = new Database(':memory:');
-    const stmts = (taskRow.ddl + '\n' + taskRow.seed).split(';').map(s => s.trim()).filter(Boolean);
-    for (const s of stmts) {
-      try { sqliteDb.exec(s); }
-      catch (e) { console.warn('SQLite setup warning [task %d]:', task_id, e.message); }
+    // Use exec() directly — it handles multiple semicolon-delimited statements
+    // correctly (including semicolons inside string literals).
+    try { sqliteDb.exec(taskRow.ddl); }
+    catch (e) { console.warn('SQLite DDL warning [task %d]:', task_id, e.message); }
+    if (taskRow.seed) {
+      try { sqliteDb.exec(taskRow.seed); }
+      catch (e) { console.warn('SQLite seed warning [task %d]:', task_id, e.message); }
     }
 
     // wzorzec
@@ -727,25 +773,49 @@ app.post('/api/sql/submit', async (req, res) => {
     sqliteDb.close();
   } catch (e) { return res.status(500).json({ error: 'Błąd SQLite: ' + e.message }); }
 
-  // porównanie — uniezależnione od kolejności kolumn
+  // porównanie — uniezależnione od kolejności kolumn I wierszy
   let passed = false;
   if (!errMsg) {
     if (userRows.length === 0 && refRows.length === 0) {
       // oba zwróciły 0 wierszy — traktuj jako poprawne
       passed = true;
-    } else if (userRows.length === refRows.length && userRows.length > 0) {
-      // Porównaj po nazwach kolumn (kolejność kolumn nie ma znaczenia)
-      passed = userRows.every((row, i) => {
-        return userCols.every((col, j) => {
-          const refIdx = refCols.indexOf(col);
-          if (refIdx === -1) return false;            // kolumna nie istnieje w wzorcu
-          const u = row[j]    === null ? null : String(row[j]).trim().toLowerCase();
-          const r = refRows[i][refIdx] === null ? null : String(refRows[i][refIdx]).trim().toLowerCase();
-          if (u === r) return true;
-          const un = parseFloat(u), rn = parseFloat(r);
-          return !isNaN(un) && !isNaN(rn) && Math.abs(un - rn) < 0.05;
-        });
-      }) && userCols.length === refCols.length;
+    } else if (userRows.length === refRows.length && userRows.length > 0 && userCols.length === refCols.length) {
+      // Mapuj kolumny ucznia → kolumny wzorca (niezależnie od kolejności)
+      const colMap = userCols.map(col => refCols.indexOf(col));
+      if (colMap.every(idx => idx !== -1)) {
+        // Normalizuj wartości do porównywalnych stringów
+        const normalize = (val) => {
+          if (val === null || val === undefined) return '\0NULL';
+          const s = String(val).trim().toLowerCase();
+          const n = parseFloat(s);
+          if (!isNaN(n) && isFinite(n)) return '\x01' + n.toFixed(6);
+          return s;
+        };
+        // Zbuduj znormalizowane wiersze (obie strony w kolejności kolumn wzorca)
+        const normalizeRow = (row, cols, mapping) =>
+          mapping ? mapping.map(idx => normalize(row[idx])) : row.map(v => normalize(v));
+
+        const normUser = userRows.map(row => normalizeRow(row, userCols, colMap));
+        const normRef  = refRows.map(row => row.map(v => normalize(v)));
+
+        // Sortuj oba zbiory leksykograficznie
+        const rowKey = (r) => r.join('\t');
+        normUser.sort((a, b) => rowKey(a).localeCompare(rowKey(b)));
+        normRef.sort((a, b) => rowKey(a).localeCompare(rowKey(b)));
+
+        // Porównaj
+        passed = normUser.every((row, i) =>
+          row.every((val, j) => {
+            if (val === normRef[i][j]) return true;
+            // Próba porównania numerycznego z tolerancją
+            if (val.startsWith('\x01') && normRef[i][j].startsWith('\x01')) {
+              const un = parseFloat(val.slice(1)), rn = parseFloat(normRef[i][j].slice(1));
+              return Math.abs(un - rn) < 0.001;
+            }
+            return false;
+          })
+        );
+      }
     }
   }
 
@@ -770,3 +840,26 @@ app.post('/api/sql/submit', async (req, res) => {
     expected_count: refRows.length,
   });
 });
+
+/* ── R33: Graceful shutdown ── */
+function gracefulShutdown(signal) {
+  console.log(`\n   ${signal} received – shutting down…`);
+  pool.end()
+    .then(() => { console.log('   DB pool closed.'); process.exit(0); })
+    .catch(() => process.exit(1));
+  // Force exit after 5s if pool.end() hangs
+  setTimeout(() => process.exit(1), 5000).unref();
+}
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+
+/* ── R34: Clean up stale tmp dirs from previous runs ── */
+try {
+  const tmpDir = os.tmpdir();
+  for (const entry of fs.readdirSync(tmpDir)) {
+    if (entry.startsWith('matura-')) {
+      try { fs.rmSync(path.join(tmpDir, entry), { recursive: true, force: true }); }
+      catch (_) {}
+    }
+  }
+} catch (_) {}

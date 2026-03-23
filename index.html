@@ -1577,7 +1577,7 @@ details:not([open]) > summary::before { content:'▸ '; }
     <span class="logo-text">Matura<em>Info</em></span>
   </div>
   <div class="header-badge">Trener 2025</div>
-  <div class="api-area">
+  <div class="api-area hidden" id="apiArea">
     <label>Backend:</label>
     <input type="text" id="apiBase" value="https://matura.itcloud.click"/>
   </div>
@@ -1710,8 +1710,8 @@ details:not([open]) > summary::before { content:'▸ '; }
         <div id="sqlScenarioBtns" style="display:flex;gap:.35rem;flex-wrap:wrap;margin-left:auto"></div>
       </div>
       <div style="flex:1;min-height:0;position:relative;background:var(--raised);overflow:hidden;display:flex;flex-direction:column">
-        <canvas id="erdCanvas" style="position:absolute;top:0;left:0;pointer-events:none"></canvas>
         <div id="erdBoard" style="position:relative;width:100%;flex:1;overflow:hidden"></div>
+        <canvas id="erdCanvas" style="position:absolute;top:0;left:0;z-index:200;pointer-events:none"></canvas>
       </div>
     </div>
 
@@ -1869,7 +1869,7 @@ details:not([open]) > summary::before { content:'▸ '; }
   </div>
 
   <!-- Pauza overlay -->
-  <div style="position:absolute;inset:0;background:rgba(30,27,75,.7);backdrop-filter:blur(10px);z-index:5;align-items:center;justify-content:center;padding:1.5rem" id="qzFPauseScreen" class="hidden">
+  <div style="position:absolute;inset:0;background:rgba(30,27,75,.7);backdrop-filter:blur(10px);z-index:5;display:flex;align-items:center;justify-content:center;padding:1.5rem" id="qzFPauseScreen" class="hidden">
     <div class="qz-overlay-box">
       <div style="font-size:3rem;margin-bottom:.75rem">⏸</div>
       <h3 style="font-size:1.3rem;font-weight:900;margin-bottom:.4rem">Pauza</h3>
@@ -2463,7 +2463,8 @@ var QUIZ_LOADED = false;
 
 /* ── helpers ── */
 function $(id){return document.getElementById(id);}
-function escH(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escH(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;}return arr;}
 function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
 /* ── toast ── */
@@ -2624,7 +2625,18 @@ function showTab(tab){
   document.querySelector('[data-tab="'+tab+'"]').classList.add('on');
   if(tab==='stats')loadStats();
   if(tab==='quiz')loadQuizQuestionsFromDB();
-  if(tab==='db')loadDBTab('algo-tasks');
+  if(tab==='db'){
+    if(!window._adminUnlocked){
+      var pin = prompt('Podaj PIN administratora:');
+      if(pin !== '1234'){
+        toast('Nieprawidłowy PIN','err');
+        showTab('algo');
+        return;
+      }
+      window._adminUnlocked = true;
+    }
+    loadDBTab('algo-tasks');
+  }
   if (tab === 'algo' || tab === 'sql') {
     setTimeout(function() {
       if (cppEditor) cppEditor.refresh();
@@ -3279,7 +3291,10 @@ function parseDDL(ddl) {
 function parseFK(ddl) {
   var links = [];
   var re = /(\w+)\s+INTEGER[^,)]*,?\s*--[^,\n]*→\s*(\w+)\.(\w+)/gi;
-  // Prosta heurystyka: kolumna kończąca się _id łączy z tabelą bez _id
+  var m;
+  while ((m = re.exec(ddl)) !== null) {
+    links.push({ col: m[1], refTable: m[2], refCol: m[3] });
+  }
   return links;
 }
 
@@ -3718,8 +3733,6 @@ var score   = {ok:0,err:0,str:0};
 var qAnswered = false;
 var qStart  = 0;
 var timerIv = null;
-var TSEC    = 10;
-var tLeft   = TSEC;
 
 /* Filtrowanie pytań po kategorii */
 function getQs(){ return qCat ? QUIZ_Q.filter(function(q){return q.cat===qCat;}) : QUIZ_Q; }
@@ -3831,7 +3844,7 @@ var learnFlipped = false;
 function learnStart(qs){
   if(!qs.length) return;
   // tasuj
-  learnDeck = qs.slice().sort(function(){return Math.random()-.5;}).map(function(q){
+  learnDeck = shuffle(qs.slice()).map(function(q){
     return { q:q, known:null };
   });
   learnCursor = 0; learnFlipped = false;
@@ -3931,7 +3944,7 @@ document.addEventListener('keydown', function(e){
   if(e.key==='ArrowRight') { e.preventDefault(); if(learnCursor<learnDeck.length-1){ learnCursor++; learnRenderCard(); } }
   if(e.key==='1') { e.preventDefault(); learnRate(false); }
   if(e.key==='2') { e.preventDefault(); learnRate(true);  }
-  if(e.key==='r'||e.key==='R') { e.preventDefault(); learnDeck.sort(function(){return Math.random()-.5;}); learnCursor=0; learnRenderCard(); }
+  if(e.key==='r'||e.key==='R') { e.preventDefault(); shuffle(learnDeck); learnCursor=0; learnRenderCard(); }
 });
 
 /* ════════════════════════════════════════
@@ -3946,6 +3959,7 @@ var qzScore    = {ok:0,err:0,str:0,maxStr:0,tot:0};
 var qzTimes    = [];
 var qzStart    = 0;
 var qzCurQ     = null;
+var qzCurOpts  = [];
 var qzShuffled = [];
 var qzSesIdx   = 0;
 
@@ -3967,7 +3981,7 @@ function qzUpdateTimer(s){
 }
 
 function qzShuffle(){
-  qzShuffled = getQs().slice().sort(function(){return Math.random()-.5;});
+  qzShuffled = shuffle(getQs().slice());
   qzSesIdx = 0;
 }
 
@@ -4007,7 +4021,8 @@ function qzNextQ(){
   $('qzFeedback').style.color = '';
 
   // Opcje MCQ (tasowane) — widoczne od razu
-  var opts = q.opts.map(function(t,i){return{t:t,i:i};}).sort(function(){return Math.random()-.5;});
+  var opts = shuffle(q.opts.map(function(t,i){return{t:t,i:i};}));
+  qzCurOpts = opts;
   var labels = ['A','B','C','D'];
   $('qzOpts').innerHTML = opts.map(function(o,li){
     return '<button class="qz-opt" data-oi="'+o.i+'">' +
@@ -4098,7 +4113,7 @@ function qzResume(){
     $('qzCat').textContent   = q.cat;
     $('qzQText').textContent = q.q;
     $('qzFeedback').textContent = '';
-    var opts = q.opts.map(function(t,i){return{t:t,i:i};}).sort(function(){return Math.random()-.5;});
+    var opts = qzCurOpts;
     var labels = ['A','B','C','D'];
     $('qzOpts').innerHTML = opts.map(function(o,li){
       return '<button class="qz-opt" data-oi="'+o.i+'">' +
@@ -4180,6 +4195,7 @@ var qzFScore      = {ok:0,err:0,str:0,maxStr:0,tot:0};
 var qzFTimes      = [];
 var qzFStart      = 0;
 var qzFCurQ       = null;
+var qzFCurOpts    = [];
 var qzFShuffled   = [];
 var qzFSesIdx     = 0;
 var CIRC_F        = 238.76;  // 2*pi*38
@@ -4202,7 +4218,7 @@ function qzFUpdateTimer(s){
 }
 
 function qzFShuffle(){
-  qzFShuffled = getQs().slice().sort(function(){return Math.random()-.5;});
+  qzFShuffled = shuffle(getQs().slice());
   qzFSesIdx   = 0;
 }
 
@@ -4238,7 +4254,8 @@ function qzFNextQ(){
   $('qzFFeedback').style.color = '';
   $('qzFProgTxt').textContent  = 'Pytanie ' + (qzFScore.tot + 1);
 
-  var opts   = q.opts.map(function(t,i){return{t:t,i:i};}).sort(function(){return Math.random()-.5;});
+  var opts   = shuffle(q.opts.map(function(t,i){return{t:t,i:i};}));
+  qzFCurOpts = opts;
   var labels = ['A','B','C','D'];
   $('qzFOpts').innerHTML = opts.map(function(o,li){
     return '<button class="qz-opt" data-oi="'+o.i+'">' +
@@ -4324,7 +4341,7 @@ function qzFResume(){
     $('qzFQText').textContent    = q.q;
     $('qzFFeedback').textContent = '';
 
-    var opts   = q.opts.map(function(t,i){return{t:t,i:i};}).sort(function(){return Math.random()-.5;});
+    var opts   = qzFCurOpts;
     var labels = ['A','B','C','D'];
     $('qzFOpts').innerHTML = opts.map(function(o,li){
       return '<button class="qz-opt" data-oi="'+o.i+'">' +
@@ -5105,6 +5122,14 @@ function fmtDate(d) {
 /* ════════════════════════════════════════
    INIT
 ════════════════════════════════════════ */
+/* Ctrl+Shift+B toggles API base URL visibility */
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && (e.key === 'b' || e.key === 'B')) {
+    e.preventDefault();
+    $('apiArea').classList.toggle('hidden');
+  }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   initEditor();
   initResizers();

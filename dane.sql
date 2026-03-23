@@ -479,9 +479,9 @@ INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_
 	 (16,'rowne','7 7','7
 2',0),
 	 (16,'wzglednie_pierw','13 7','1
-5',1),
+4',1),
 	 (16,'duze','1000000000000000000 999999999999999999','1
-87',1),
+3',1),
 	 (17,'przyklad','6
 3 1 4 1 5 9','1
 9
@@ -505,7 +505,7 @@ INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_
 5',1),
 	 (18,'przyklad','5
 5 3 1 4 2','1 2 3 4 5
-8',0),
+7',0),
 	 (18,'jeden','1
 7','7
 0',0),
@@ -549,7 +549,7 @@ INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_
 	 (22,'przyklad','2 10','1024',0),
 	 (22,'zero_exp','5 0','1',0),
 	 (22,'jeden_base','1 1000000000000000000','1',0),
-	 (22,'modulo','2 30','1073741824',0),
+	 (22,'modulo','2 30','73741817',0),
 	 (22,'duze','2 1000000000','140625001',1),
 	 (22,'zero_base','0 5','0',1),
 	 (23,'przyklad','2 10','1024
@@ -564,7 +564,7 @@ INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_
 	 (24,'n0','3 0','3/1',0),
 	 (24,'n1','3 1','4/1',0),
 	 (24,'n2','3 2','16/3',0),
-	 (24,'n3','9 3','64/1',0),
+	 (24,'n3','9 3','64/3',0),
 	 (24,'n5','3 5','1024/81',1),
 	 (26,'przyklad','ABCBDAB
 BDCAB','4
@@ -592,7 +592,7 @@ GTAB',1),
 13',1),
 	 (28,'przyklad','41
 3
-25 10 1','4
+25 10 1','8
 25 x 1
 10 x 1
 1 x 6',0),
@@ -602,10 +602,11 @@ GTAB',1),
 	 (28,'dokładny','100
 2
 50 25','2
-50 x 2',0),
+50 x 2
+25 x 0',0),
 	 (28,'jeden_grosz','7
 3
-5 2 1','4
+5 2 1','2
 5 x 1
 2 x 1
 1 x 0',1);
@@ -670,11 +671,11 @@ FRONT','9
 	 (33,'przyklad','7
 1 3 5 7 9 11 13
 7','3
-2',0),
+1',0),
 	 (33,'pierwszy','5
 1 2 3 4 5
 1','0
-3',0),
+2',0),
 	 (33,'ostatni','5
 1 2 3 4 5
 5','4
@@ -722,336 +723,8 @@ INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_
 	 (35,'ten_sam','3 2
 1 2
 2 3
-2 2','0',1),
-	 (8,'szesc','6','TAK',0);
+2 2','0',1);
 INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (8,'dwadziescia_osiem','28','TAK',0),
-	 (8,'jeden','1','NIE',0),
-	 (8,'dwanascie','12','NIE',0),
-	 (8,'czterysta_dziewiec','496','TAK',1),
-	 (8,'osiem_tysiecy','8128','TAK',1),
-	 (8,'duza_zlozona','100','NIE',1),
-	 (9,'zero','0','0',0),
-	 (9,'jeden','1','1',0),
-	 (9,'dziesiec','10','A',0),
-	 (9,'ff','255','FF',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (9,'sto','256','100',0),
-	 (9,'cafe','51966','CAFE',1),
-	 (9,'miliard','1000000000','3B9ACA00',1),
-	 (10,'binarny_zero','0 2','0',0),
-	 (10,'binarny_42','42 2','101010',0),
-	 (10,'osemkowy_255','255 8','377',0),
-	 (10,'hex_255','255 16','FF',0),
-	 (10,'trojkowy_10','10 3','101',0),
-	 (10,'hex_miliard','1000000000 16','3B9ACA00',1),
-	 (11,'przyklad','12 8','4
-24',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (11,'wzglednie','13 7','1
-91',0),
-	 (11,'rowne','6 6','6
-6',0),
-	 (11,'jeden_jeden','1 1','1
-1',0),
-	 (11,'duze','999999999 1000000000','1
-999999999000000000',1),
-	 (12,'listen_silent','listen
-silent','TAK',0),
-	 (12,'hello_world','hello
-world','NIE',0),
-	 (12,'abc_cba','abc
-cba','TAK',0),
-	 (12,'rozna_dlugosc','ab
-abc','NIE',0),
-	 (12,'jedno_slowo','a
-a','TAK',1),
-	 (12,'puste_rozne','ab
-ba','TAK',1);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (13,'przyklad','ababcabab
-ab','0
-2
-5
-7',0),
-	 (13,'brak','hello
-xyz','BRAK',0),
-	 (13,'poczatek','abcdef
-abc','0',0),
-	 (13,'koniec','xyzabc
-abc','3',0),
-	 (13,'caly_tekst','abc
-abc','0',0),
-	 (13,'wielokrotne','aaaaaa
-aa','0
-1
-2
-3
-4',1),
-	 (14,'przyklad','hello world
-3','khoor zruog',0),
-	 (14,'zero','abc
-0','abc',0),
-	 (14,'dwadziescia_szesc','abc
-26','abc',0),
-	 (14,'pelny_obrot','xyz
-3','abc',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (14,'ze_spacjami','ab cd
-1','bc de',1),
-	 (14,'jeden_znak','z
-1','a',1),
-	 (16,'przyklad','48 18','6
-4',0),
-	 (16,'b_zero','5 0','5
-1',0),
-	 (16,'rowne','7 7','7
-2',0),
-	 (16,'wzglednie_pierw','13 7','1
-5',1),
-	 (16,'duze','1000000000000000000 999999999999999999','1
-87',1),
-	 (17,'przyklad','6
-3 1 4 1 5 9','1
-9
-8',0),
-	 (17,'jeden_elem','1
-42','42
-42
-0',0),
-	 (17,'dwa_elem','2
-5 3','3
-5
-1',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (17,'posortowane','4
-1 2 3 4','1
-4
-5',0),
-	 (17,'wszystkie_rowne','4
-7 7 7 7','7
-7
-5',1),
-	 (18,'przyklad','5
-5 3 1 4 2','1 2 3 4 5
-8',0),
-	 (18,'jeden','1
-7','7
-0',0),
-	 (18,'juz_posortowane','4
-1 2 3 4','1 2 3 4
-4',0),
-	 (18,'odwrotne','4
-4 3 2 1','1 2 3 4
-4',0),
-	 (18,'dwa_elem','2
-2 1','1 2
-1',1),
-	 (18,'wiekszy','8
-8 7 6 5 4 3 2 1','1 2 3 4 5 6 7 8
-12',1),
-	 (19,'przyklad','1.0 2.0 0.000001','1.521380',0),
-	 (19,'szersza','0.0 3.0 0.000001','1.521380',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (19,'dokladna','1.0 2.0 0.0000001','1.521380',1),
-	 (20,'sqrt2','2','1.414214',0),
-	 (20,'sqrt9','9','3.000000',0),
-	 (20,'sqrt1','1','1.000000',0),
-	 (20,'sqrt100','100','10.000000',0),
-	 (20,'sqrt2_5','2.25','1.500000',1),
-	 (21,'przyklad','2
-1 -3 2
-3','2',0),
-	 (21,'stala','0
-5
-100','5',0),
-	 (21,'liniowy','1
-2 1
-3','7',0),
-	 (21,'x_zero','3
-1 2 3 4
-0','4',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (21,'ujemne_x','2
-1 0 -1
--2','3',1),
-	 (22,'przyklad','2 10','1024',0),
-	 (22,'zero_exp','5 0','1',0),
-	 (22,'jeden_base','1 1000000000000000000','1',0),
-	 (22,'modulo','2 30','1073741824',0),
-	 (22,'duze','2 1000000000','140625001',1),
-	 (22,'zero_base','0 5','0',1),
-	 (23,'przyklad','2 10','1024
-5',0),
-	 (23,'zero_exp','5 0','1
-1',0),
-	 (23,'dwa_jeden','2 1','2
-2',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (23,'dwa_osiem','2 8','256
-5',1),
-	 (24,'n0','3 0','3/1',0),
-	 (24,'n1','3 1','4/1',0),
-	 (24,'n2','3 2','16/3',0),
-	 (24,'n3','9 3','64/1',0),
-	 (24,'n5','3 5','1024/81',1),
-	 (26,'przyklad','ABCBDAB
-BDCAB','4
-BCAB',0),
-	 (26,'identyczne','ABC
-ABC','3
-ABC',0),
-	 (26,'rozlaczne','ABC
-XYZ','0
-',0),
-	 (26,'jeden_znak','A
-A','1
-A',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (26,'dlugi','AGGTAB
-GXTXAYB','4
-GTAB',1),
-	 (27,'przyklad','3 + 4 * 2','3 4 2 * +
-11',0),
-	 (27,'nawiasy','( 2 + 3 ) * 4','2 3 + 4 *
-20',0),
-	 (27,'samo_dodanie','1 + 2','1 2 +
-3',0),
-	 (27,'zlozone','2 * ( 3 + 4 ) - 1','2 3 4 + * 1 -
-13',1),
-	 (28,'przyklad','41
-3
-25 10 1','4
-25 x 1
-10 x 1
-1 x 6',0),
-	 (28,'zero','0
-2
-10 1','0',0),
-	 (28,'dokładny','100
-2
-50 25','2
-50 x 2',0),
-	 (28,'jeden_grosz','7
-3
-5 2 1','4
-5 x 1
-2 x 1
-1 x 0',1),
-	 (29,'przyklad','8
-10 9 2 5 3 7 101 18','4
-2 3 7 18',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (29,'jeden','1
-5','1
-5',0),
-	 (29,'malejace','4
-4 3 2 1','1
-1',0),
-	 (29,'rosnace','5
-1 2 3 4 5','5
-1 2 3 4 5',0),
-	 (29,'z_rownoscia','5
-3 3 3 3 3','1
-3',1),
-	 (31,'przyklad','5
-PUSH 3
-PUSH 7
-TOP
-POP
-EMPTY','7
-7
-0',0),
-	 (31,'pusty','1
-EMPTY','1',0),
-	 (31,'push_pop','3
-PUSH 1
-POP
-EMPTY','1
-1',0),
-	 (31,'trzy_push','4
-PUSH 5
-PUSH 3
-PUSH 1
-TOP','1',1),
-	 (32,'przyklad','5
-ENQUEUE 3
-ENQUEUE 7
-FRONT
-DEQUEUE
-EMPTY','3
-3
-0',0),
-	 (32,'pusty','1
-EMPTY','1',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (32,'fifo_order','4
-ENQUEUE 1
-ENQUEUE 2
-DEQUEUE
-DEQUEUE','1
-2',0),
-	 (32,'front_nie_usuwa','3
-ENQUEUE 9
-FRONT
-FRONT','9
-9',1),
-	 (33,'przyklad','7
-1 3 5 7 9 11 13
-7','3
-2',0),
-	 (33,'pierwszy','5
-1 2 3 4 5
-1','0
-3',0),
-	 (33,'ostatni','5
-1 2 3 4 5
-5','4
-3',0),
-	 (33,'brak','3
-1 3 5
-4','-1
-3',0),
-	 (33,'jeden_elem','1
-42
-42','0
-1',1),
-	 (34,'n10','10','55
-11',0),
-	 (34,'n0','0','0
-1',0),
-	 (34,'n1','1','1
-2',0);
-INSERT INTO matura_db.algo_task_tests (task_id,test_name,input_data,expected,is_hidden) VALUES
-	 (34,'n5','5','5
-6',0),
-	 (34,'n20','20','6765
-21',1),
-	 (34,'n50','50','12586269025
-51',1),
-	 (35,'przyklad','5 6
-1 2
-1 3
-2 4
-3 4
-4 5
-3 5
-1 5','2',0),
-	 (35,'bezposredni','2 1
-1 2
-1 2','1',0),
-	 (35,'brak','3 2
-1 2
-2 3
-1 3','1',0),
-	 (35,'rozlaczny','4 2
-1 2
-3 4
-1 4','-1',0),
-	 (35,'ten_sam','3 2
-1 2
-2 3
-2 2','0',1),
 	 (36,'przyklad','5
 5 3 1 4 2','1 2 3 4 5
 7',0),
@@ -1166,17 +839,24 @@ int main(){
 }'),
 	 ('Rozkład na czynniki pierwsze','easy','Wczytaj N (2 ≤ N ≤ 10^6). Wypisz rozkład: p1^e1 * p2^e2 * ... Pomiń "^1" gdy wykładnik = 1.','Dziel N przez kolejne liczby od 2. Licz powtórzenia. Gdy i*i > N i N > 1, N jest ostatnim czynnikiem.','360','2^3 * 3^2 * 5',1,'2026-03-14 11:29:38','#include <bits/stdc++.h>
 using namespace std;
-bool pierwsza(long long n){
-    if(n < 2) return false;
-    if(n == 2) return true;
-    if(n % 2 == 0) return false;
-    for(long long i = 3; i * i <= n; i += 2)
-        if(n % i == 0) return false;
-    return true;
-}
 int main(){
-    long long n; cin >> n;
-    cout << (pierwsza(n) ? "TAK" : "NIE") << endl;
+    int n; cin >> n;
+    bool first = true;
+    for(int i = 2; (long long)i*i <= n; i++){
+        int cnt = 0;
+        while(n % i == 0){ cnt++; n /= i; }
+        if(cnt > 0){
+            if(!first) cout << " * ";
+            cout << i;
+            if(cnt > 1) cout << "^" << cnt;
+            first = false;
+        }
+    }
+    if(n > 1){
+        if(!first) cout << " * ";
+        cout << n;
+    }
+    cout << endl;
     return 0;
 }'),
 	 ('Wyszukiwanie binarne','medium','Wczytaj n, następnie n posortowanych liczb, potem x. Wypisz indeks (od 0) pierwszego x lub -1.','l=0, r=n-1, mid=(l+r)/2. Porównaj a[mid] z x i zawęż przedział.','7
@@ -1228,13 +908,21 @@ int main(){
     int n; cin >> n;
     vector<int> a(n);
     for(int i = 0; i < n; i++) cin >> a[i];
+    int shifts = 0;
     for(int i = 1; i < n; i++){
         int key = a[i], j = i-1;
-        while(j >= 0 && a[j] > key){ a[j+1] = a[j]; j--; }
+        while(j >= 0 && a[j] > key){
+            a[j+1] = a[j];
+            j--;
+            shifts++;
+        }
         a[j+1] = key;
     }
-    for(int i = 0; i < n; i++) cout << a[i] << " 
-"[i==n-1];
+    for(int i = 0; i < n; i++){
+        if(i) cout << " ";
+        cout << a[i];
+    }
+    cout << "\n" << shifts << endl;
     return 0;
 }'),
 	 ('Sito Eratostenesa','medium','Wczytaj N (2 ≤ N ≤ 10^6). Wypisz wszystkie liczby pierwsze od 2 do N, każdą w osobnej linii.','Tablica bool is_prime[N+1]. Dla i od 2: jeśli is_prime[i], oznacz wielokrotności i (od i*i) jako false.','20','2
@@ -1259,18 +947,32 @@ int main(){
 ";
     return 0;
 }'),
-	 ('Liczba doskonała','easy','Wczytaj liczbę całkowitą N (1 ≤ N ≤ 10^7). Wypisz TAK jeśli N jest liczbą doskonałą (suma właściwych dzielników = N), NIE w przeciwnym razie.','Sumuj dzielniki d od 1 do N-1 gdzie N%d==0. Optymalizacja: iteruj do √N i dodawaj oba dzielniki, uważaj na d=√N.','6','TAK',1,'2026-03-14 12:19:36',NULL),
+	 ('Liczba doskonała','easy','Wczytaj liczbę całkowitą N (1 ≤ N ≤ 10^7). Wypisz TAK jeśli N jest liczbą doskonałą (suma właściwych dzielników = N), NIE w przeciwnym razie.','Sumuj dzielniki d od 1 do N-1 gdzie N%d==0. Optymalizacja: iteruj do √N i dodawaj oba dzielniki, uważaj na d=√N.','6','TAK',1,'2026-03-14 12:19:36','#include <bits/stdc++.h>
+using namespace std;
+int main(){
+    long long n; cin >> n;
+    if(n <= 1){ cout << "NIE" << endl; return 0; }
+    long long sum = 1;
+    for(long long i = 2; i * i <= n; i++){
+        if(n % i == 0){
+            sum += i;
+            if(i != n/i) sum += n/i;
+        }
+    }
+    cout << (sum == n ? "TAK" : "NIE") << endl;
+    return 0;
+}'),
 	 ('Konwersja: dziesiętny → hex','easy','Wczytaj liczbę całkowitą N (0 ≤ N ≤ 10^9). Wypisz jej reprezentację szesnastkową WIELKIMI LITERAMI (bez prefiksu 0x). Przypadek: N=0 → "0".','Dziel N przez 16, reszty: 10→A, 11→B, 12→C, 13→D, 14→E, 15→F. Zbieraj od tyłu.','255','FF',1,'2026-03-14 12:19:36','#include <bits/stdc++.h>
 using namespace std;
 int main(){
-    long long n; int b;
-    cin >> n >> b;
+    long long n;
+    cin >> n;
     if(n == 0){ cout << 0; return 0; }
     string res = "";
     while(n > 0){
-        int r = n % b;
+        int r = n % 16;
         res = char(r < 10 ? ''0''+r : ''A''+(r-10)) + res;
-        n /= b;
+        n /= 16;
     }
     cout << res << endl;
     return 0;
@@ -1298,7 +1000,7 @@ int main(){
     cin >> a >> b;
     long long p = a, q = b;
     while(q != 0){ long long r = p % q; p = q; q = r; }
-    cout << (a / p) * b << endl;
+    cout << p << "\n" << (a / p) * b << endl;
     return 0;
 }'),
 	 ('Porównywanie tekstów (anagram)','easy','Wczytaj dwa słowa S1 i S2 (tylko małe litery, max 1000 znaków). Wypisz TAK jeśli są anagramami (zawierają te same litery w dowolnej kolejności), NIE w przeciwnym razie.','Posortuj oba ciągi i porównaj. Lub zlicz wystąpienia każdej litery (tablica int freq[26]).','listen
@@ -1315,13 +1017,34 @@ int main(){
 ab','0
 2
 5
-7',1,'2026-03-14 12:19:37',NULL),
+7',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
+using namespace std;
+int main(){
+    string t, w;
+    getline(cin, t);
+    getline(cin, w);
+    int n = t.size(), m = w.size();
+    bool found = false;
+    for(int i = 0; i <= n - m; i++){
+        bool match = true;
+        for(int j = 0; j < m; j++){
+            if(t[i+j] != w[j]){ match = false; break; }
+        }
+        if(match){
+            cout << i << "\n";
+            found = true;
+        }
+    }
+    if(!found) cout << "BRAK" << endl;
+    return 0;
+}'),
 	 ('Szyfr Cezara','easy','Wczytaj tekst (tylko małe litery i spacje) i liczbę przesunięcia K (0 ≤ K ≤ 25). Wypisz zaszyfrowany tekst (spacje bez zmian, litery przesunięte cyklicznie o K w prawo).','Dla każdej litery c: wynik = (c - ''a'' + K) % 26 + ''a''. Spacje przepisz bez zmian.','hello world
 3','khoor zruog',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
 int main(){
-    string s; int k;
-    cin >> s >> k;
+    string s;
+    getline(cin, s);
+    int k; cin >> k;
     k = ((k % 26) + 26) % 26;
     for(char& c : s){
         if(c>=''a''&&c<=''z'') c = ''a'' + (c-''a''+k)%26;
@@ -1333,14 +1056,17 @@ int main(){
 	 ('Algorytm Euklidesa – wersja rekurencyjna','easy','Wczytaj dwie nieujemne liczby całkowite A i B (0 ≤ A,B ≤ 10^18). Wypisz NWD używając rekurencji. Następnie wypisz liczbę wywołań rekurencyjnych (wliczając pierwsze wywołanie).','nwd(a,b): jeśli b==0 zwróć a, wpp zwróć nwd(b, a%b). Licznik++przy każdym wywołaniu. Użyj long long.','48 18','6
 4',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
+int cnt = 0;
+long long nwd(long long a, long long b){
+    cnt++;
+    if(b == 0) return a;
+    return nwd(b, a % b);
+}
 int main(){
     long long a, b;
     cin >> a >> b;
-    while(b != 0){
-        long long r = a % b;
-        a = b; b = r;
-    }
-    cout << a << endl;
+    long long g = nwd(a, b);
+    cout << g << "\n" << cnt << endl;
     return 0;
 }'),
 	 ('Wyszukiwanie max i min jednocześnie','easy','Wczytaj n (1 ≤ n ≤ 10^6) i n liczb całkowitych. Wypisz minimum i maksimum w dwóch liniach. Policz porównania i wypisz w trzeciej linii. Metoda dziel i zwyciężaj: porównuj parami (ceil(3n/2)-2 porównań).','Metoda par: dla każdej pary (a[i], a[i+1]) znajdź lokalny min i max (1 porównanie), potem porównaj z globalnym min/max (2 porównania). Razem ~3n/2 porównań.','6
@@ -1351,98 +1077,157 @@ using namespace std;
 int main(){
     int n; cin >> n;
     vector<int> a(n);
-    for(int& x : a) cin >> x;
-    cout << *max_element(a.begin(), a.end()) << " "
-         << *min_element(a.begin(), a.end()) << endl;
+    for(int i = 0; i < n; i++) cin >> a[i];
+    int mn = a[0], mx = a[0];
+    int cmp = 0;
+    int i = 1;
+    for(; i + 1 < n; i += 2){
+        int lo, hi;
+        cmp++;
+        if(a[i] < a[i+1]){ lo = a[i]; hi = a[i+1]; }
+        else { lo = a[i+1]; hi = a[i]; }
+        cmp++;
+        if(lo < mn) mn = lo;
+        cmp++;
+        if(hi > mx) mx = hi;
+    }
+    if(i < n){
+        cmp++;
+        if(a[i] < mn) mn = a[i];
+        else { cmp++; if(a[i] > mx) mx = a[i]; }
+    }
+    cout << mn << "\n" << mx << "\n" << cmp << endl;
     return 0;
 }'),
 	 ('Sortowanie przez scalanie (Merge Sort)','hard','Wczytaj n (1 ≤ n ≤ 10^5) i n liczb całkowitych. Posortuj rosnąco algorytmem merge sort i wypisz wynik. W drugiej linii wypisz liczbę porównań wykonanych podczas scalania.','Rekurencyjnie dziel na pół, sort lewą, sort prawą, scal. Podczas scalania licz każde porównanie elementów. Złożoność O(n log n).','5
 5 3 1 4 2','1 2 3 4 5
-8',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
+7',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
-void msort(vector<int>& a, int l, int r){
+int cmpCnt = 0;
+void mergeSort(vector<int>& a, int l, int r){
     if(l >= r) return;
-    int mid=(l+r)/2;
-    msort(a,l,mid); msort(a,mid+1,r);
-    inplace_merge(a.begin()+l, a.begin()+mid+1, a.begin()+r+1);
+    int mid = (l + r) / 2;
+    mergeSort(a, l, mid);
+    mergeSort(a, mid + 1, r);
+    vector<int> tmp;
+    int i = l, j = mid + 1;
+    while(i <= mid && j <= r){
+        cmpCnt++;
+        if(a[i] <= a[j]) tmp.push_back(a[i++]);
+        else tmp.push_back(a[j++]);
+    }
+    while(i <= mid) tmp.push_back(a[i++]);
+    while(j <= r) tmp.push_back(a[j++]);
+    for(int k = l; k <= r; k++) a[k] = tmp[k - l];
 }
 int main(){
-    int n; cin>>n;
+    int n; cin >> n;
     vector<int> a(n);
-    for(int& x:a) cin>>x;
-    msort(a,0,n-1);
-    for(int i=0;i<n;i++) cout<<a[i]<<" 
-"[i==n-1];
+    for(int i = 0; i < n; i++) cin >> a[i];
+    mergeSort(a, 0, n - 1);
+    for(int i = 0; i < n; i++){
+        if(i) cout << " ";
+        cout << a[i];
+    }
+    cout << "\n" << cmpCnt << endl;
     return 0;
 }'),
-	 ('Metoda połowienia – miejsce zerowe','medium','Wczytaj trzy liczby rzeczywiste a, b, eps (a < b, eps > 0). Znajdź miejsce zerowe funkcji f(x) = x^3 - x - 2 w przedziale [a,b] metodą bisekcji. Wypisz wynik z dokładnością do eps (format %.6f).','mid = (a+b)/2. Jeśli f(a)*f(mid) <= 0, to b=mid, wpp a=mid. Powtarzaj dopóki b-a > eps.','1.0 2.0 0.000001','1.521380',1,'2026-03-14 12:19:37',NULL),
-	 ('Pierwiastek kwadratowy (metoda Newtona)','medium','Wczytaj liczbę rzeczywistą X (0 < X ≤ 10^9) i dokładność eps (domyślnie 1e-9). Wypisz sqrt(X) obliczone metodą Newtona-Raphsona z dokładnością 6 miejsc po przecinku.','x_{n+1} = (x_n + X/x_n) / 2. Startuj od x0 = X/2. Powtarzaj dopóki |x_{n+1} - x_n| > eps.','2','1.414214',1,'2026-03-14 12:19:37',NULL),
+	 ('Metoda połowienia – miejsce zerowe','medium','Wczytaj trzy liczby rzeczywiste a, b, eps (a < b, eps > 0). Znajdź miejsce zerowe funkcji f(x) = x^3 - x - 2 w przedziale [a,b] metodą bisekcji. Wypisz wynik z dokładnością do eps (format %.6f).','mid = (a+b)/2. Jeśli f(a)*f(mid) <= 0, to b=mid, wpp a=mid. Powtarzaj dopóki b-a > eps.','1.0 2.0 0.000001','1.521380',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
+using namespace std;
+double f(double x){ return x*x*x - x - 2; }
+int main(){
+    double a, b, eps;
+    cin >> a >> b >> eps;
+    for(int i = 0; i < 200 && b - a > eps * 0.01; i++){
+        double mid = (a + b) / 2.0;
+        if(f(a) * f(mid) <= 0) b = mid;
+        else a = mid;
+    }
+    printf("%.6f\n", (a + b) / 2.0);
+    return 0;
+}'),
+	 ('Pierwiastek kwadratowy (metoda Newtona)','medium','Wczytaj liczbę rzeczywistą X (0 < X ≤ 10^9) i dokładność eps (domyślnie 1e-9). Wypisz sqrt(X) obliczone metodą Newtona-Raphsona z dokładnością 6 miejsc po przecinku.','x_{n+1} = (x_n + X/x_n) / 2. Startuj od x0 = X/2. Powtarzaj dopóki |x_{n+1} - x_n| > eps.','2','1.414214',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
+using namespace std;
+int main(){
+    double X;
+    cin >> X;
+    double eps = 1e-9;
+    double x = X;
+    if(x == 0){ printf("%.6f\n", 0.0); return 0; }
+    while(true){
+        double nx = (x + X / x) / 2.0;
+        if(fabs(nx - x) < eps) break;
+        x = nx;
+    }
+    printf("%.6f\n", x);
+    return 0;
+}'),
 	 ('Schemat Hornera – wartość wielomianu','medium','Wczytaj stopień n (0 ≤ n ≤ 1000), następnie n+1 współczynników a_n, a_{n-1}, ..., a_0, a na końcu wartość x. Oblicz wartość wielomianu W(x) i wypisz ją. Użyj schematu Hornera.','W = a_n; for i in 1..n: W = W*x + a_{n-i}. Złożoność O(n), bez potęgowania.','2
 1 -3 2
 3','2',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
-long long power(long long base, long long exp, long long mod){
-    long long result = 1;
-    base %= mod;
-    while(exp > 0){
-        if(exp & 1) result = result * base % mod;
-        base = base * base % mod;
-        exp >>= 1;
-    }
-    return result;
-}
 int main(){
-    long long a, b, m;
-    cin >> a >> b >> m;
-    cout << power(a, b, m) << endl;
+    int n; cin >> n;
+    vector<long long> a(n + 1);
+    for(int i = 0; i <= n; i++) cin >> a[i];
+    long long x; cin >> x;
+    long long w = a[0];
+    for(int i = 1; i <= n; i++) w = w * x + a[i];
+    cout << w << endl;
     return 0;
 }');
 INSERT INTO matura_db.algo_tasks (title,difficulty,description,hint,ex_input,ex_output,is_active,created_at,solution) VALUES
 	 ('Szybkie potęgowanie iteracyjne','medium','Wczytaj podstawę B i wykładnik E (0 ≤ B ≤ 10^9, 0 ≤ E ≤ 10^18). Oblicz B^E mod 10^9+7 algorytmem szybkiego potęgowania iteracyjnego.','res=1, base=B%MOD. Dopóki E>0: jeśli E%2==1 to res=res*base%MOD. base=base*base%MOD. E/=2. Użyj long long!','2 10','1024',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
-long long power(long long base, long long exp, long long mod){
-    long long result = 1; base %= mod;
-    while(exp > 0){
-        if(exp & 1) result = result * base % mod;
-        base = base * base % mod;
-        exp >>= 1;
-    }
-    return result;
-}
 int main(){
-    long long a, b, m; cin >> a >> b >> m;
-    cout << power(a, b, m) << endl;
+    long long b, e;
+    cin >> b >> e;
+    long long mod = 1000000007;
+    long long result = 1;
+    b %= mod;
+    while(e > 0){
+        if(e & 1) result = result * b % mod;
+        b = b * b % mod;
+        e >>= 1;
+    }
+    cout << result << endl;
     return 0;
 }'),
 	 ('Szybkie potęgowanie rekurencyjne','medium','Wczytaj B i E (0 ≤ B ≤ 10^9, 0 ≤ E ≤ 10^9). Oblicz B^E mod 10^9+7 rekurencyjnie. Wypisz wynik i głębokość rekurencji.','fast_pow(b,e): jeśli e==0 zwróć 1; jeśli e parzyste: t=fast_pow(b,e/2); zwróć t*t%MOD; wpp zwróć b*fast_pow(b,e-1)%MOD. Głębokość = log2(E)+1.','2 10','1024
 5',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
-long long power(long long base, long long exp, long long mod){
-    long long result = 1;
-    base %= mod;
-    while(exp > 0){
-        if(exp & 1) result = result * base % mod;
-        base = base * base % mod;
-        exp >>= 1;
-    }
-    return result;
+const long long MOD = 1000000007;
+int depth = 0;
+long long fpow(long long b, long long e){
+    depth++;
+    if(e == 0) return 1;
+    long long t = fpow(b, e / 2);
+    t = t * t % MOD;
+    if(e % 2 == 1) t = t * b % MOD;
+    return t;
 }
 int main(){
-    long long a, b, m;
-    cin >> a >> b >> m;
-    cout << power(a, b, m) << endl;
+    long long b, e;
+    cin >> b >> e;
+    b %= MOD;
+    long long res = fpow(b, e);
+    cout << res << "\n" << depth << endl;
     return 0;
 }'),
 	 ('Rekurencyjne fraktale – ciąg Kocha (długość)','hard','Wczytaj długość boku L (liczba całkowita) i liczbę iteracji n (0 ≤ n ≤ 20). Wypisz łączną długość krzywej Kocha po n iteracjach. Każdy segment dzieli się na 4 segmenty o długości 1/3 pierwotnego. Wypisz jako liczbę całkowitą (L * 4^n / 3^n – wypisz licznik i mianownik w postaci nieskracalnej).','Po n krokach: liczba segmentów = 4^n, długość segmentu = L/3^n. Łączna = L * (4/3)^n. Wypisz licznik/mianownik po uproszczeniu przez NWD.','3 2','16/3',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
 int main(){
-    long long a, b;
-    cin >> a >> b;
-    while(b != 0){
-        long long r = a % b;
-        a = b; b = r;
+    long long L, n;
+    cin >> L >> n;
+    long long num = L;
+    long long den = 1;
+    for(int i = 0; i < n; i++){
+        num *= 4;
+        den *= 3;
     }
-    cout << a << endl;
+    long long a = num, b = den;
+    while(b != 0){ long long r = a % b; a = b; b = r; }
+    cout << num / a << "/" << den / a << endl;
     return 0;
 }'),
 	 ('Najdłuższy wspólny podciąg (LCS)','hard','Wczytaj dwa ciągi znaków S1 i S2 (tylko małe litery, max 1000 znaków każdy). Wypisz długość najdłuższego wspólnego podciągu (LCS) i sam podciąg. Programowanie dynamiczne.','dp[i][j] = dp[i-1][j-1]+1 jeśli S1[i]==S2[j], wpp max(dp[i-1][j], dp[i][j-1]). Odtwórz podciąg idąc wstecz.','ABCBDAB
@@ -1451,70 +1236,132 @@ BCAB',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
 int main(){
     string a, b; cin >> a >> b;
-    int n=a.size(), m=b.size();
-    vector<vector<int>> dp(n+1,vector<int>(m+1,0));
-    for(int i=1;i<=n;i++)
-        for(int j=1;j<=m;j++)
-            if(a[i-1]==b[j-1]) dp[i][j]=dp[i-1][j-1]+1;
-            else dp[i][j]=max(dp[i-1][j],dp[i][j-1]);
-    cout<<dp[n][m]<<endl;
+    int n = a.size(), m = b.size();
+    vector<vector<int>> dp(n+1, vector<int>(m+1, 0));
+    for(int i = 1; i <= n; i++)
+        for(int j = 1; j <= m; j++)
+            if(a[i-1] == b[j-1]) dp[i][j] = dp[i-1][j-1] + 1;
+            else dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
+    cout << dp[n][m] << "\n";
+    string lcs = "";
+    int i = n, j = m;
+    while(i > 0 && j > 0){
+        if(a[i-1] == b[j-1]){ lcs = a[i-1] + lcs; i--; j--; }
+        else if(dp[i-1][j] >= dp[i][j-1]) i--;
+        else j--;
+    }
+    cout << lcs << endl;
     return 0;
 }'),
 	 ('Zamiana na ONP i obliczanie wartości','hard','Wczytaj wyrażenie arytmetyczne w notacji infiksowej (liczby całkowite, operatory +,-,*,/, nawiasy). Wypisz postać ONP (odwrotna notacja polska), a w drugiej linii wartość wyrażenia (dzielenie całkowite).','Algorytm stacji rozrządowej (Shunting-yard): operatory na stos, liczby do kolejki. Priorytety: */=2, +/−=1. Ewaluuj ONP stosem.','3 + 4 * 2','3 4 2 * +
 11',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
+int prec(char c){ return (c==''*''||c==''/'')?2:1; }
 int main(){
-    string s; cin >> s;
-    stack<char> st;
-    bool ok = true;
-    for(char c : s){
-        if(c==''('' || c==''['' || c==''{'') st.push(c);
-        else if(c=='')'' || c=='']'' || c==''}''){
-            if(st.empty()){ ok=false; break; }
-            char top = st.top(); st.pop();
-            if((c=='')'' && top!=''('') ||
-               (c=='']'' && top!=''['') ||
-               (c==''}'' && top!=''{'')){ ok=false; break; }
+    string line;
+    getline(cin, line);
+    istringstream iss(line);
+    vector<string> onp;
+    stack<char> ops;
+    string tok;
+    while(iss >> tok){
+        if(tok == "(") ops.push(''('');
+        else if(tok == ")"){
+            while(ops.top() != ''(''){
+                string s(1, ops.top()); onp.push_back(s); ops.pop();
+            }
+            ops.pop();
+        } else if(tok=="+"||tok=="-"||tok=="*"||tok=="/"){
+            char c = tok[0];
+            while(!ops.empty() && ops.top()!=''('' && prec(ops.top())>=prec(c)){
+                string s(1, ops.top()); onp.push_back(s); ops.pop();
+            }
+            ops.push(c);
+        } else {
+            onp.push_back(tok);
         }
     }
-    if(!st.empty()) ok = false;
-    cout << (ok ? "TAK" : "NIE") << endl;
+    while(!ops.empty()){
+        string s(1, ops.top()); onp.push_back(s); ops.pop();
+    }
+    for(int i = 0; i < (int)onp.size(); i++){
+        if(i) cout << " ";
+        cout << onp[i];
+    }
+    cout << "\n";
+    stack<long long> st;
+    for(auto& t : onp){
+        if(t=="+"||t=="-"||t=="*"||t=="/"){
+            long long b = st.top(); st.pop();
+            long long a = st.top(); st.pop();
+            if(t=="+") st.push(a+b);
+            else if(t=="-") st.push(a-b);
+            else if(t=="*") st.push(a*b);
+            else st.push(a/b);
+        } else {
+            st.push(stoll(t));
+        }
+    }
+    cout << st.top() << endl;
     return 0;
 }'),
-	 ('Podejście zachłanne – wydawanie reszty','medium','Wczytaj kwotę Q i liczbę nominałów k (1 ≤ k ≤ 20). Następnie k nominałów w kolejności malejącej. Wypisz minimalną liczbę monet metodą zachłanną i ich skład (po jednej linii na nominał: "nominał x ilość", pomiń zera). Zakładaj, że nominały pozwalają zawsze wydać resztę.','Zachłannie: bierz jak najwięcej największego nominału, potem następnego. Monety[i] = Q / nominał[i]; Q %= nominał[i].','41
+	 ('Podejście zachłanne – wydawanie reszty','medium','Wczytaj kwotę Q i liczbę nominałów k (1 ≤ k ≤ 20). Następnie k nominałów w kolejności malejącej. Wypisz minimalną liczbę monet metodą zachłanną i ich skład (po jednej linii na nominał: "nominał x ilość"). Zakładaj, że nominały pozwalają zawsze wydać resztę.','Zachłannie: bierz jak najwięcej największego nominału, potem następnego. Monety[i] = Q / nominał[i]; Q %= nominał[i].','41
 3
-25 10 1','4
+25 10 1','8
 25 x 1
 10 x 1
 1 x 6',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
 int main(){
-    int n, k; cin >> n >> k;
-    vector<int> monety(k);
-    for(int& x : monety) cin >> x;
-    vector<int> dp(n+1, INT_MAX);
-    dp[0] = 0;
-    for(int i = 1; i <= n; i++)
-        for(int m : monety)
-            if(m <= i && dp[i-m] != INT_MAX)
-                dp[i] = min(dp[i], dp[i-m]+1);
-    cout << (dp[n]==INT_MAX ? -1 : dp[n]) << endl;
+    int q, k;
+    cin >> q >> k;
+    vector<int> nom(k);
+    for(int i = 0; i < k; i++) cin >> nom[i];
+    if(q == 0){ cout << 0 << endl; return 0; }
+    int total = 0;
+    vector<pair<int,int>> used;
+    for(int i = 0; i < k; i++){
+        int cnt = q / nom[i];
+        if(cnt > 0){
+            total += cnt;
+            q -= cnt * nom[i];
+        }
+        used.push_back({nom[i], cnt});
+    }
+    cout << total << "\n";
+    for(auto& p : used){
+        cout << p.first << " x " << p.second << "\n";
+    }
     return 0;
 }'),
 	 ('Programowanie dynamiczne – najdłuższy rosnący podciąg (LIS)','hard','Wczytaj n (1 ≤ n ≤ 10^4) i n liczb całkowitych. Wypisz długość najdłuższego ściśle rosnącego podciągu (LIS) i sam podciąg.','dp[i] = max(dp[j]+1) dla j<i gdzie a[j]<a[i]. dp[i] = 1 na starcie. Złożoność O(n^2). Odtwórz podciąg śledząc poprzedniki.','8
 10 9 2 5 3 7 101 18','4
 2 3 7 18',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
-// Przykład: najdłuższy rosnący podciąg (LIS)
 int main(){
     int n; cin >> n;
     vector<int> a(n);
     for(int& x : a) cin >> x;
-    vector<int> dp(n, 1);
-    for(int i=1;i<n;i++)
-        for(int j=0;j<i;j++)
-            if(a[j]<a[i]) dp[i]=max(dp[i], dp[j]+1);
-    cout << *max_element(dp.begin(), dp.end()) << endl;
+    vector<int> dp(n, 1), prev(n, -1);
+    for(int i = 1; i < n; i++)
+        for(int j = 0; j < i; j++)
+            if(a[j] < a[i] && dp[j] + 1 >= dp[i]){
+                dp[i] = dp[j] + 1;
+                prev[i] = j;
+            }
+    int mx = *max_element(dp.begin(), dp.end());
+    int idx = -1;
+    for(int i = n - 1; i >= 0; i--)
+        if(dp[i] == mx){ idx = i; break; }
+    cout << mx << "\n";
+    vector<int> seq;
+    for(int i = idx; i != -1; i = prev[i]) seq.push_back(a[i]);
+    reverse(seq.begin(), seq.end());
+    for(int i = 0; i < (int)seq.size(); i++){
+        if(i) cout << " ";
+        cout << seq[i];
+    }
+    cout << endl;
     return 0;
 }'),
 	 ('Struktury dynamiczne – stos (realizacja ONP)','medium','Zaimplementuj stos na tablicy. Wczytaj n operacji: "PUSH x" (wstaw x), "POP" (usuń i wypisz), "TOP" (podejrzyj bez usuwania), "EMPTY" (wypisz 1 jeśli pusty, 0 wpp). Na wyjściu każda operacja wypisująca w osobnej linii.','Tablica int stack[MAX]; int top=-1. PUSH: stack[++top]=x. POP: return stack[top--]. TOP: return stack[top]. EMPTY: return top==-1.','5
@@ -1527,19 +1374,24 @@ EMPTY','7
 0',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
 int main(){
-    string s; cin >> s;
-    stack<char> st;
-    bool ok = true;
-    for(char c : s){
-        if(c==''(''||c==''[''||c==''{'') st.push(c);
-        else if(c=='')''||c=='']''||c==''}''){
-            if(st.empty()){ ok=false; break; }
-            char top = st.top(); st.pop();
-            if((c=='')''&&top!=''('') || (c=='']''&&top!=''['') || (c==''}''&&top!=''{'')){ ok=false; break; }
+    int n; cin >> n;
+    cin.ignore();
+    vector<int> st;
+    for(int i = 0; i < n; i++){
+        string line;
+        getline(cin, line);
+        if(line.substr(0, 4) == "PUSH"){
+            int x = stoi(line.substr(5));
+            st.push_back(x);
+        } else if(line == "POP"){
+            cout << st.back() << "\n";
+            st.pop_back();
+        } else if(line == "TOP"){
+            cout << st.back() << "\n";
+        } else if(line == "EMPTY"){
+            cout << (st.empty() ? 1 : 0) << "\n";
         }
     }
-    if(!st.empty()) ok = false;
-    cout << (ok ? "TAK" : "NIE") << endl;
     return 0;
 }'),
 	 ('Struktury dynamiczne – kolejka','medium','Zaimplementuj kolejkę (FIFO). Wczytaj n operacji: "ENQUEUE x", "DEQUEUE" (usuń i wypisz pierwszy), "FRONT" (podejrzyj), "EMPTY". Na wyjściu operacje wypisujące w osobnych liniach.','Tablica cykliczna lub dwie zmienne head/tail. ENQUEUE: arr[tail++]=x. DEQUEUE: return arr[head++].','5
@@ -1549,41 +1401,70 @@ FRONT
 DEQUEUE
 EMPTY','3
 3
-0',1,'2026-03-14 12:19:37',NULL),
-	 ('Metoda połowienia – wyszukiwanie w tablicy (rekurencja)','medium','Wczytaj n, tablicę posortowaną rosnąco i szukaną wartość x. Zaimplementuj wyszukiwanie binarne REKURENCYJNIE. Wypisz indeks (od 0) lub -1 oraz głębokość rekurencji.','bin_search(arr, l, r, x, depth): mid=(l+r)/2. Jeśli arr[mid]==x zwróć {mid, depth}. Jeśli x<arr[mid] szukaj w lewej, wpp prawej. Przypadek: l>r → {-1, depth}.','7
-1 3 5 7 9 11 13
-7','3
-2',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
+0',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
 int main(){
     int n; cin >> n;
-    vector<int> a(n);
-    for(int& x : a) cin >> x;
-    int k; cin >> k;
-    int lo = 0, hi = n-1, pos = -1;
-    while(lo <= hi){
-        int mid = (lo+hi)/2;
-        if(a[mid] == k){ pos = mid; break; }
-        else if(a[mid] < k) lo = mid+1;
-        else hi = mid-1;
+    cin.ignore();
+    queue<int> q;
+    for(int i = 0; i < n; i++){
+        string line;
+        getline(cin, line);
+        if(line.substr(0, 7) == "ENQUEUE"){
+            int x = stoi(line.substr(8));
+            q.push(x);
+        } else if(line == "DEQUEUE"){
+            cout << q.front() << "\n";
+            q.pop();
+        } else if(line == "FRONT"){
+            cout << q.front() << "\n";
+        } else if(line == "EMPTY"){
+            cout << (q.empty() ? 1 : 0) << "\n";
+        }
     }
-    cout << pos << endl;
+    return 0;
+}'),
+	 ('Metoda połowienia – wyszukiwanie w tablicy (rekurencja)','medium','Wczytaj n, tablicę posortowaną rosnąco i szukaną wartość x. Zaimplementuj wyszukiwanie binarne REKURENCYJNIE. Wypisz indeks (od 0) lub -1 oraz liczbę wywołań rekurencyjnych.','bin_search(arr, l, r, x, depth): mid=(l+r)/2. Jeśli arr[mid]==x zwróć {mid, depth}. Jeśli x<arr[mid] szukaj w lewej, wpp prawej. Przypadek: l>r → {-1, depth}.','7
+1 3 5 7 9 11 13
+7','3
+1',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
+using namespace std;
+int depth_cnt = 0;
+int bsearch(vector<int>& a, int l, int r, int x){
+    depth_cnt++;
+    if(l > r) return -1;
+    int mid = (l + r) / 2;
+    if(a[mid] == x) return mid;
+    if(x < a[mid]) return bsearch(a, l, mid - 1, x);
+    return bsearch(a, mid + 1, r, x);
+}
+int main(){
+    int n; cin >> n;
+    vector<int> a(n);
+    for(int i = 0; i < n; i++) cin >> a[i];
+    int x; cin >> x;
+    int pos = bsearch(a, 0, n - 1, x);
+    cout << pos << "\n" << depth_cnt << endl;
     return 0;
 }');
 INSERT INTO matura_db.algo_tasks (title,difficulty,description,hint,ex_input,ex_output,is_active,created_at,solution) VALUES
 	 ('Rekurencja – ciąg Fibonacciego z memoizacją','medium','Wczytaj n (0 ≤ n ≤ 50). Oblicz F(n) metodą rekurencyjną z memoizacją. Wypisz F(n) i liczbę unikalnych wywołań rekurencyjnych (bez powtórek dzięki memoizacji). F(0)=0, F(1)=1.','memo[n] = -1 na starcie. Jeśli memo[n] != -1 zwróć memo[n]. Wpp oblicz rekurencyjnie i zapisz. Licznik wywołań bez memoizacji = n+1.','10','55
 11',1,'2026-03-14 12:19:37','#include <bits/stdc++.h>
 using namespace std;
+long long memo[51];
+bool computed[51];
+long long fib(int n){
+    if(computed[n]) return memo[n];
+    computed[n] = true;
+    if(n <= 1){ memo[n] = n; return n; }
+    memo[n] = fib(n-1) + fib(n-2);
+    return memo[n];
+}
 int main(){
-    int n;
-    cin >> n;
-    long long a = 0, b = 1;
-    if(n == 0){ cout << 0; return 0; }
-    for(int i = 2; i <= n; i++){
-        long long c = a + b;
-        a = b; b = c;
-    }
-    cout << b << endl;
+    int n; cin >> n;
+    memset(computed, false, sizeof(computed));
+    long long res = fib(n);
+    cout << res << "\n" << n + 1 << endl;
     return 0;
 }'),
 	 ('Grafy – BFS (najkrótsza ścieżka)','hard','Wczytaj liczbę wierzchołków V i krawędzi E, potem E par (u v) reprezentujących krawędzie nieskierowane, a na końcu wierzchołek startowy S i docelowy T. Wypisz długość najkrótszej ścieżki od S do T lub -1 jeśli nie istnieje. Wierzchołki numerowane od 1.','BFS z kolejką: odległości dist[V+1]=-1. dist[S]=0. Dodaj S do kolejki. Dla każdego u z kolejki: dla każdego sąsiada v: jeśli dist[v]==-1 to dist[v]=dist[u]+1, dodaj v do kolejki.','5 6
@@ -1621,34 +1502,50 @@ int main(){
     int n; cin >> n;
     vector<int> a(n);
     for(int i = 0; i < n; i++) cin >> a[i];
+    int swaps = 0;
     for(int i = 0; i < n-1; i++)
         for(int j = 0; j < n-1-i; j++)
-            if(a[j] > a[j+1]) swap(a[j], a[j+1]);
-    for(int i = 0; i < n; i++) cout << a[i] << " 
-"[i==n-1];
+            if(a[j] > a[j+1]){ swap(a[j], a[j+1]); swaps++; }
+    for(int i = 0; i < n; i++){
+        if(i) cout << " ";
+        cout << a[i];
+    }
+    cout << "\n" << swaps << endl;
     return 0;
 }'),
 	 ('Sortowanie szybkie (Quick Sort)','hard','Wczytaj n (1 ≤ n ≤ 10^5) i n liczb całkowitych. Posortuj rosnąco algorytmem quicksort (pivot = ostatni element partycji). Wypisz posortowaną tablicę i liczbę porównań wykonanych w funkcji partition.','partition(arr,l,r): pivot=arr[r], i=l-1. Dla j=l..r-1: jeśli arr[j]<=pivot to i++, swap(arr[i],arr[j]), porównanie++. Swap(arr[i+1],arr[r]). Rekurencja na obu częściach.','5
 3 6 8 10 1','1 3 6 8 10
 10',1,'2026-03-14 12:28:28','#include <bits/stdc++.h>
 using namespace std;
+int cmpCnt = 0;
+int partition(vector<int>& a, int l, int r){
+    int pivot = a[r], i = l - 1;
+    for(int j = l; j < r; j++){
+        cmpCnt++;
+        if(a[j] <= pivot){ i++; swap(a[i], a[j]); }
+    }
+    swap(a[i+1], a[r]);
+    return i + 1;
+}
 void qsort(vector<int>& a, int l, int r){
     if(l >= r) return;
-    int pivot = a[(l+r)/2], i = l, j = r;
-    while(i <= j){
-        while(a[i] < pivot) i++;
-        while(a[j] > pivot) j--;
-        if(i <= j) swap(a[i++], a[j--]);
-    }
-    qsort(a, l, j);
-    qsort(a, i, r);
+    int p = partition(a, l, r);
+    int lo = p, hi = p;
+    while(lo > l && a[lo-1] == a[p]) lo--;
+    while(hi < r && a[hi+1] == a[p]) hi++;
+    qsort(a, l, lo - 1);
+    qsort(a, hi + 1, r);
 }
 int main(){
     int n; cin >> n;
     vector<int> a(n);
-    for(int& x : a) cin >> x;
-    qsort(a, 0, n-1);
-    for(int i = 0; i < n; i++) cout << a[i] << " \\n"[i==n-1];
+    for(int i = 0; i < n; i++) cin >> a[i];
+    qsort(a, 0, n - 1);
+    for(int i = 0; i < n; i++){
+        if(i) cout << " ";
+        cout << a[i];
+    }
+    cout << "\n" << cmpCnt << endl;
     return 0;
 }'),
 	 ('Wyszukiwanie liniowe','easy','Wczytaj n (1 ≤ n ≤ 10^6), n liczb całkowitych, a następnie szukaną wartość x. Wypisz indeks (od 0) pierwszego wystąpienia x lub -1 jeśli nie znaleziono. W drugiej linii wypisz liczbę wykonanych porównań.','Iteruj od i=0 do n-1, porównanie++ przy każdym kroku. Jeśli a[i]==x zwróć i. Jeśli przeszedłeś całą tablicę → -1. Liczba porównań = i+1 (znaleziony) lub n (nieznaleziony).','5
@@ -1658,12 +1555,15 @@ int main(){
 using namespace std;
 int main(){
     int n; cin >> n;
-    map<int, int> cnt;
+    vector<int> a(n);
+    for(int i = 0; i < n; i++) cin >> a[i];
+    int x; cin >> x;
+    int pos = -1, cmp = 0;
     for(int i = 0; i < n; i++){
-        int x; cin >> x; cnt[x]++;
+        cmp++;
+        if(a[i] == x){ pos = i; break; }
     }
-    for(auto& [val, c] : cnt)
-        cout << val << ": " << c << "\\n";
+    cout << pos << "\n" << cmp << endl;
     return 0;
 }'),
 	 ('Ciąg Fibonacciego (iteracyjny)','easy','Wczytaj n (0 ≤ n ≤ 93). Wypisz F(n) – n-ty wyraz ciągu Fibonacciego obliczony iteracyjnie. F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2). Użyj long long (F(93) przekracza zakres int).','Użyj dwóch zmiennych: a=0, b=1. W pętli: temp=a+b, a=b, b=temp. Po n-1 iteracjach a = F(n). Przypadki brzegowe: F(0)=0, F(1)=1.','10','55',1,'2026-03-14 12:28:28','#include <bits/stdc++.h>
