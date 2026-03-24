@@ -574,6 +574,116 @@ app.get('/api/stats/detailed/:sid', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+/* GET /api/stats/dashboard/:sid — full task dashboard with mastery + all attempts + code — MUST be before /api/stats/:sid */
+app.get('/api/stats/dashboard/:sid', async (req, res) => {
+  const sid = req.params.sid;
+  try {
+    /* ── All algo tasks (even unattempted) ── */
+    const allAlgoTasks = await db('SELECT id, title, difficulty FROM algo_tasks ORDER BY id');
+    /* ── All SQL scenarios+tasks (even unattempted) ── */
+    const allSqlScenarios = await db('SELECT id, name FROM sql_scenarios WHERE is_active=1 ORDER BY id');
+    const allSqlTasks = await db('SELECT id, scenario_id, title, difficulty FROM sql_tasks WHERE is_active=1 ORDER BY id');
+
+    /* ── Every algo attempt for this user (unlimited, newest first) ── */
+    const algoAttempts = await db(`
+      SELECT id, task_id, task_title, tests_total, tests_passed, code, duration_ms, attempted_at
+      FROM algo_attempts WHERE session_id = ? ORDER BY attempted_at DESC
+    `, [sid]);
+
+    /* ── Every SQL attempt for this user ── */
+    const sqlAttempts = await db(`
+      SELECT id, task_id, task_title, query, is_correct, error_msg, attempted_at
+      FROM sql_attempts WHERE session_id = ? ORDER BY attempted_at DESC
+    `, [sid]);
+
+    /* ── Build algo per-task ── */
+    const algoMap = {};
+    for (const t of allAlgoTasks) {
+      algoMap[t.id] = {
+        task_id: t.id, task_title: t.title, difficulty: t.difficulty,
+        attempts: [], total_attempts: 0, fully_passed: 0,
+        best_passed: 0, tests_total: 0, best_pct: 0,
+        best_time_ms: null, last_attempt: null, mastered: false
+      };
+    }
+    for (const a of algoAttempts) {
+      if (!algoMap[a.task_id]) {
+        algoMap[a.task_id] = {
+          task_id: a.task_id, task_title: a.task_title, difficulty: null,
+          attempts: [], total_attempts: 0, fully_passed: 0,
+          best_passed: 0, tests_total: 0, best_pct: 0,
+          best_time_ms: null, last_attempt: null, mastered: false
+        };
+      }
+      const m = algoMap[a.task_id];
+      m.attempts.push({
+        id: a.id, tests_total: a.tests_total, tests_passed: a.tests_passed,
+        code: a.code, duration_ms: a.duration_ms, attempted_at: a.attempted_at
+      });
+      m.total_attempts++;
+      const ok = a.tests_total > 0 && a.tests_passed >= a.tests_total;
+      if (ok) m.fully_passed++;
+      if (a.tests_passed > m.best_passed) m.best_passed = a.tests_passed;
+      if (a.tests_total > m.tests_total) m.tests_total = a.tests_total;
+      if (a.tests_total > 0) {
+        const pct = Math.round(a.tests_passed / a.tests_total * 100);
+        if (pct > m.best_pct) m.best_pct = pct;
+      }
+      if (a.duration_ms && (!m.best_time_ms || a.duration_ms < m.best_time_ms)) m.best_time_ms = a.duration_ms;
+      if (!m.last_attempt) m.last_attempt = a.attempted_at;
+    }
+    // Mastery: last 3 attempts all 100%
+    for (const m of Object.values(algoMap)) {
+      if (m.attempts.length >= 3) {
+        const last3 = m.attempts.slice(0, 3);
+        m.mastered = last3.every(a => a.tests_total > 0 && a.tests_passed >= a.tests_total);
+      }
+    }
+
+    /* ── Build SQL per-task ── */
+    const sqlMap = {};
+    for (const t of allSqlTasks) {
+      const sc = allSqlScenarios.find(s => s.id === t.scenario_id);
+      sqlMap[t.id] = {
+        task_id: t.id, task_title: t.title, difficulty: t.difficulty,
+        scenario_name: sc ? sc.name : '?',
+        attempts: [], total_attempts: 0, correct: 0,
+        best_pct: 0, last_attempt: null, mastered: false
+      };
+    }
+    for (const a of sqlAttempts) {
+      if (!sqlMap[a.task_id]) {
+        sqlMap[a.task_id] = {
+          task_id: a.task_id, task_title: a.task_title, difficulty: null,
+          scenario_name: '?',
+          attempts: [], total_attempts: 0, correct: 0,
+          best_pct: 0, last_attempt: null, mastered: false
+        };
+      }
+      const m = sqlMap[a.task_id];
+      m.attempts.push({
+        id: a.id, query: a.query, is_correct: a.is_correct,
+        error_msg: a.error_msg, attempted_at: a.attempted_at
+      });
+      m.total_attempts++;
+      if (a.is_correct) m.correct++;
+      if (!m.last_attempt) m.last_attempt = a.attempted_at;
+    }
+    for (const m of Object.values(sqlMap)) {
+      m.best_pct = m.total_attempts > 0 ? Math.round(m.correct / m.total_attempts * 100) : 0;
+      if (m.attempts.length >= 3) {
+        const last3 = m.attempts.slice(0, 3);
+        m.mastered = last3.every(a => !!a.is_correct);
+      }
+    }
+
+    res.json({
+      algoTasks: Object.values(algoMap),
+      sqlTasks: Object.values(sqlMap)
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.get('/api/stats/:sid', async (req, res) => {
   const sid = req.params.sid;
   try {

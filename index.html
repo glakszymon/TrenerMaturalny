@@ -1097,6 +1097,103 @@ details:not([open]) > summary::before { content:'▸ '; }
 .stat-card .sl { font-size:.72rem; color:var(--muted); font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
 
 /* ══════════════════════════════════════════
+   TASK DASHBOARD — two-column layout
+══════════════════════════════════════════ */
+.dash-cols { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+@media(max-width:1100px) { .dash-cols { grid-template-columns:1fr; } }
+.dash-col { min-width:0; }
+
+.dash-task {
+  border:2px solid var(--border); border-radius:var(--r); background:#fff;
+  margin-bottom:.65rem; overflow:hidden; transition:border-color .15s;
+}
+.dash-task:hover { border-color:var(--indigo); }
+.dash-task.sql-task:hover { border-color:var(--teal); }
+
+.dash-task-hdr {
+  display:flex; align-items:center; gap:8px; padding:.65rem .85rem;
+  cursor:pointer; user-select:none;
+}
+.dash-task-hdr:hover { background:var(--raised); }
+
+.dash-task-num {
+  min-width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  background:var(--indigo-l); color:var(--indigo); border-radius:8px;
+  font-family:var(--mono); font-size:.72rem; font-weight:800; flex-shrink:0;
+}
+.sql-task .dash-task-num { background:var(--teal-l); color:var(--teal); }
+
+.dash-task-title {
+  font-size:.82rem; font-weight:700; color:var(--text); flex:1; min-width:0;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+.dash-task-badges { display:flex; gap:5px; align-items:center; flex-shrink:0; }
+
+.dash-mastery {
+  display:inline-flex; align-items:center; padding:2px 8px; border-radius:99px;
+  font-size:.65rem; font-weight:800; letter-spacing:.03em;
+}
+.dash-mastery.mastered { background:var(--green-l); color:var(--green); }
+.dash-mastery.not-mastered { background:var(--raised); color:var(--muted); }
+.dash-mastery.no-attempts { background:var(--raised); color:var(--muted); font-style:italic; }
+
+.dash-pct {
+  font-family:var(--mono); font-size:.72rem; font-weight:800; min-width:38px; text-align:right;
+}
+
+.dash-task-body {
+  display:none; padding:0 .85rem .75rem; border-top:1px solid var(--border);
+}
+.dash-task-body.open { display:block; padding-top:.65rem; }
+
+.dash-info-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));
+  gap:6px; margin-bottom:.65rem;
+}
+.dash-info-item {
+  background:var(--raised); border-radius:var(--r-sm); padding:6px 10px;
+}
+.dash-info-label { font-size:.62rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.dash-info-val { font-size:.85rem; font-weight:800; color:var(--text); margin-top:1px; }
+
+.dash-go-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 14px; border-radius:var(--r-sm);
+  border:2px solid var(--indigo); background:var(--indigo-l); color:var(--indigo);
+  font-family:var(--ui); font-size:.73rem; font-weight:800;
+  cursor:pointer; transition:all .15s; margin-bottom:.55rem;
+}
+.dash-go-btn:hover { background:var(--indigo); color:#fff; }
+.sql-task .dash-go-btn { border-color:var(--teal); background:var(--teal-l); color:var(--teal); }
+.sql-task .dash-go-btn:hover { background:var(--teal); color:#fff; }
+
+.dash-attempts-label {
+  font-size:.68rem; font-weight:800; color:var(--muted); text-transform:uppercase;
+  letter-spacing:.05em; margin-bottom:5px; margin-top:.45rem;
+}
+
+.dash-attempt-row {
+  display:flex; align-items:center; gap:8px; padding:5px 8px;
+  border-radius:var(--r-sm); font-size:.78rem; cursor:pointer;
+  transition:background .1s;
+}
+.dash-attempt-row:hover { background:var(--raised); }
+
+.dash-attempt-code {
+  display:none; margin:0 0 6px; padding:8px 10px;
+  background:#282a36; color:#f8f8f2; border-radius:var(--r-sm);
+  font-family:var(--mono); font-size:.72rem; line-height:1.6;
+  white-space:pre-wrap; word-break:break-all; max-height:300px; overflow-y:auto;
+}
+.dash-attempt-code.open { display:block; }
+
+.dash-expand-arrow {
+  display:inline-block; transition:transform .2s; font-size:.7rem; color:var(--muted);
+}
+.dash-expand-arrow.open { transform:rotate(90deg); }
+
+/* ══════════════════════════════════════════
    TOAST
 ══════════════════════════════════════════ */
 .toast {
@@ -2413,20 +2510,29 @@ li.CodeMirror-hint-active {
     <div id="statsProgressBars"><div style="color:var(--muted);font-size:.83rem">Ładowanie...</div></div>
   </div>
 
-  <!-- Algo: per-zadanie -->
-  <div class="card" style="margin-top:1rem">
-    <div class="clabel" style="display:flex;align-items:center;gap:8px">
-      <span style="color:var(--indigo)">⌥</span> Algorytmika — postęp per zadanie
-    </div>
-    <div id="statsAlgoPerTask"><div style="color:var(--muted);font-size:.83rem">Ładowanie...</div></div>
-  </div>
+  <!-- Dashboard: dwie kolumny Algo + SQL -->
+  <div class="dash-cols" style="margin-top:1.25rem">
 
-  <!-- SQL: per-zadanie -->
-  <div class="card" style="margin-top:1rem">
-    <div class="clabel" style="display:flex;align-items:center;gap:8px">
-      <span style="color:var(--teal)">⛃</span> SQL — postęp per zadanie
+    <!-- Kolumna Algo C++ -->
+    <div class="dash-col">
+      <div class="card" style="margin-bottom:0">
+        <div class="clabel" style="display:flex;align-items:center;gap:8px;margin-bottom:.65rem">
+          <span style="color:var(--indigo)">⌥</span> Algorytmika C++ — zadania
+        </div>
+        <div id="dashAlgoTasks"><div style="color:var(--muted);font-size:.83rem">Ładowanie...</div></div>
+      </div>
     </div>
-    <div id="statsSQLPerTask"><div style="color:var(--muted);font-size:.83rem">Ładowanie...</div></div>
+
+    <!-- Kolumna SQL -->
+    <div class="dash-col">
+      <div class="card" style="margin-bottom:0">
+        <div class="clabel" style="display:flex;align-items:center;gap:8px;margin-bottom:.65rem">
+          <span style="color:var(--teal)">⛃</span> SQL — zadania
+        </div>
+        <div id="dashSqlTasks"><div style="color:var(--muted);font-size:.83rem">Ładowanie...</div></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Quiz: per-kategoria -->
@@ -5366,20 +5472,220 @@ async function loadQuizHistory() {
 }
 
 /* ════════════════════════════════════════
-   STATYSTYKI
+   STATYSTYKI — DASHBOARD
 ════════════════════════════════════════ */
+
+function dashFmtDuration(ms) {
+  if (!ms && ms !== 0) return '—';
+  if (ms < 1000) return ms + ' ms';
+  var s = Math.round(ms / 1000);
+  if (s < 60) return s + 's';
+  var m = Math.floor(s / 60);
+  return m + 'm ' + (s % 60) + 's';
+}
+
+function dashFmtDateTime(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('pl-PL', {
+    day:'2-digit', month:'2-digit', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+}
+
+/* Navigate to algo task from dashboard */
+function dashGoAlgo(taskId) {
+  var t = algoTasks.find(function(x) { return x.id == taskId; });
+  if (!t) { toast('Nie znaleziono zadania #' + taskId, 'err'); return; }
+  showTab('algo');
+  selectAlgoTask(t);
+}
+
+/* Navigate to SQL task from dashboard */
+function dashGoSql(taskId) {
+  // Find which scenario has this task and switch to it first
+  for (var i = 0; i < sqlScenarios.length; i++) {
+    var found = (sqlScenarios[i].tasks || []).find(function(t) { return t.id == taskId; });
+    if (found) {
+      // Select scenario first
+      document.querySelectorAll('#sqlScenarioBtns .btn').forEach(function(b){ b.classList.remove('t'); });
+      var btns = document.querySelectorAll('#sqlScenarioBtns .btn');
+      if (btns[i]) btns[i].classList.add('t');
+      selectScenario(i);
+      // Now switch tab and select task
+      showTab('sql');
+      selectSQLTask(taskId);
+      return;
+    }
+  }
+  toast('Nie znaleziono zadania SQL #' + taskId, 'err');
+}
+
+/* Toggle expand/collapse of a task card */
+function dashToggle(id) {
+  var body = document.getElementById('dashBody_' + id);
+  var arrow = document.getElementById('dashArrow_' + id);
+  if (!body) return;
+  body.classList.toggle('open');
+  if (arrow) arrow.classList.toggle('open');
+}
+
+/* Toggle code view for an attempt */
+function dashToggleCode(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
+}
+
+/* Render a single algo task card */
+function renderAlgoTaskCard(t) {
+  var hasTries = t.total_attempts > 0;
+  var masteryClass = !hasTries ? 'no-attempts' : (t.mastered ? 'mastered' : 'not-mastered');
+  var masteryText  = !hasTries ? 'brak prób' : (t.mastered ? 'OPANOWANE' : 'w trakcie');
+  var pctColor = t.best_pct === 100 ? 'var(--green)' : t.best_pct >= 60 ? 'var(--amber)' : 'var(--rose)';
+  if (!hasTries) pctColor = 'var(--muted)';
+
+  var uid = 'algo_' + t.task_id;
+  var html = '<div class="dash-task">';
+  html += '<div class="dash-task-hdr" onclick="dashToggle(\'' + uid + '\')">';
+  html += '<span class="dash-expand-arrow" id="dashArrow_' + uid + '">&#9654;</span>';
+  html += '<span class="dash-task-num">' + t.task_id + '</span>';
+  html += '<span class="dash-task-title">' + escH(t.task_title) + '</span>';
+  html += '<span class="dash-task-badges">';
+  html += '<span class="dash-mastery ' + masteryClass + '">' + masteryText + '</span>';
+  if (hasTries) html += '<span class="dash-pct" style="color:' + pctColor + '">' + t.best_pct + '%</span>';
+  html += '</span>';
+  html += '</div>';
+
+  // Expandable body
+  html += '<div class="dash-task-body" id="dashBody_' + uid + '">';
+
+  // Go to task button
+  html += '<button class="dash-go-btn" onclick="dashGoAlgo(' + t.task_id + ')">&#9654; Przejdź do zadania</button>';
+
+  // Info grid
+  html += '<div class="dash-info-grid">';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Próby</div><div class="dash-info-val">' + t.total_attempts + '</div></div>';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Ukończone</div><div class="dash-info-val" style="color:' + (t.fully_passed > 0 ? 'var(--green)' : 'var(--muted)') + '">' + t.fully_passed + '</div></div>';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Najlepszy %</div><div class="dash-info-val" style="color:' + pctColor + '">' + (hasTries ? t.best_pct + '%' : '—') + '</div></div>';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Najlepszy czas</div><div class="dash-info-val">' + dashFmtDuration(t.best_time_ms) + '</div></div>';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Ostatnia próba</div><div class="dash-info-val" style="font-size:.75rem">' + dashFmtDateTime(t.last_attempt) + '</div></div>';
+  if (t.difficulty) {
+    var diffCls = t.difficulty === 'easy' ? 'diff-easy' : t.difficulty === 'medium' ? 'diff-med' : 'diff-hard';
+    var diffTxt = t.difficulty === 'easy' ? 'Łatwe' : t.difficulty === 'medium' ? 'Średnie' : 'Trudne';
+    html += '<div class="dash-info-item"><div class="dash-info-label">Trudność</div><div class="dash-info-val"><span class="' + diffCls + '">' + diffTxt + '</span></div></div>';
+  }
+  html += '</div>';
+
+  // Attempts list
+  if (t.attempts.length > 0) {
+    html += '<div class="dash-attempts-label">Historia rozwiązań (' + t.attempts.length + ')</div>';
+    t.attempts.forEach(function(a, idx) {
+      var ok = a.tests_total > 0 && a.tests_passed >= a.tests_total;
+      var partial = a.tests_passed > 0 && !ok;
+      var badgeCls = ok ? 'b-ok' : partial ? 'b-warn' : 'b-err';
+      var badgeTxt = ok ? '✓ ' + a.tests_passed + '/' + a.tests_total : a.tests_passed + '/' + a.tests_total;
+      var aPct = a.tests_total > 0 ? Math.round(a.tests_passed / a.tests_total * 100) : 0;
+      var codeId = 'algoCode_' + t.task_id + '_' + idx;
+
+      html += '<div class="dash-attempt-row" onclick="dashToggleCode(\'' + codeId + '\')">';
+      html += '<span class="badge ' + badgeCls + '">' + badgeTxt + '</span>';
+      html += '<span style="font-family:var(--mono);font-size:.72rem;color:' + (ok ? 'var(--green)' : 'var(--muted)') + '">' + aPct + '%</span>';
+      html += '<span style="font-family:var(--mono);font-size:.72rem;color:var(--muted)">' + dashFmtDuration(a.duration_ms) + '</span>';
+      html += '<span style="font-size:.72rem;color:var(--muted);margin-left:auto">' + dashFmtDateTime(a.attempted_at) + '</span>';
+      html += '</div>';
+      if (a.code) {
+        html += '<div class="dash-attempt-code" id="' + codeId + '">' + escH(a.code) + '</div>';
+      }
+    });
+  } else {
+    html += '<div style="color:var(--muted);font-size:.8rem;font-style:italic;margin-top:.35rem">Jeszcze nie próbowano tego zadania.</div>';
+  }
+
+  html += '</div>'; // body
+  html += '</div>'; // dash-task
+  return html;
+}
+
+/* Render a single SQL task card */
+function renderSqlTaskCard(t) {
+  var hasTries = t.total_attempts > 0;
+  var masteryClass = !hasTries ? 'no-attempts' : (t.mastered ? 'mastered' : 'not-mastered');
+  var masteryText  = !hasTries ? 'brak prób' : (t.mastered ? 'OPANOWANE' : 'w trakcie');
+  var pctColor = t.best_pct === 100 ? 'var(--green)' : t.best_pct >= 50 ? 'var(--amber)' : 'var(--rose)';
+  if (!hasTries) pctColor = 'var(--muted)';
+
+  var uid = 'sql_' + t.task_id;
+  var html = '<div class="dash-task sql-task">';
+  html += '<div class="dash-task-hdr" onclick="dashToggle(\'' + uid + '\')">';
+  html += '<span class="dash-expand-arrow" id="dashArrow_' + uid + '">&#9654;</span>';
+  html += '<span class="dash-task-num">' + t.task_id + '</span>';
+  html += '<span class="dash-task-title">' + escH(t.task_title) + '</span>';
+  html += '<span class="dash-task-badges">';
+  html += '<span class="dash-mastery ' + masteryClass + '">' + masteryText + '</span>';
+  if (hasTries) html += '<span class="dash-pct" style="color:' + pctColor + '">' + t.best_pct + '%</span>';
+  html += '</span>';
+  html += '</div>';
+
+  // Expandable body
+  html += '<div class="dash-task-body" id="dashBody_' + uid + '">';
+
+  // Go to task button
+  html += '<button class="dash-go-btn" onclick="dashGoSql(' + t.task_id + ')">&#9654; Przejdź do zadania</button>';
+
+  // Info grid
+  html += '<div class="dash-info-grid">';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Próby</div><div class="dash-info-val">' + t.total_attempts + '</div></div>';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Poprawne</div><div class="dash-info-val" style="color:' + (t.correct > 0 ? 'var(--green)' : 'var(--muted)') + '">' + t.correct + '</div></div>';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Skuteczność</div><div class="dash-info-val" style="color:' + pctColor + '">' + (hasTries ? t.best_pct + '%' : '—') + '</div></div>';
+  html += '<div class="dash-info-item"><div class="dash-info-label">Ostatnia próba</div><div class="dash-info-val" style="font-size:.75rem">' + dashFmtDateTime(t.last_attempt) + '</div></div>';
+  if (t.scenario_name && t.scenario_name !== '?') {
+    html += '<div class="dash-info-item"><div class="dash-info-label">Scenariusz</div><div class="dash-info-val" style="font-size:.75rem">' + escH(t.scenario_name) + '</div></div>';
+  }
+  if (t.difficulty) {
+    var diffCls = t.difficulty === 'easy' ? 'diff-easy' : t.difficulty === 'medium' ? 'diff-med' : 'diff-hard';
+    var diffTxt = t.difficulty === 'easy' ? 'Łatwe' : t.difficulty === 'medium' ? 'Średnie' : 'Trudne';
+    html += '<div class="dash-info-item"><div class="dash-info-label">Trudność</div><div class="dash-info-val"><span class="' + diffCls + '">' + diffTxt + '</span></div></div>';
+  }
+  html += '</div>';
+
+  // Attempts list
+  if (t.attempts.length > 0) {
+    html += '<div class="dash-attempts-label">Historia rozwiązań (' + t.attempts.length + ')</div>';
+    t.attempts.forEach(function(a, idx) {
+      var ok = !!a.is_correct;
+      var badgeCls = ok ? 'b-ok' : 'b-err';
+      var badgeTxt = ok ? '✓ Poprawne' : '✗ Błędne';
+      var codeId = 'sqlCode_' + t.task_id + '_' + idx;
+
+      html += '<div class="dash-attempt-row" onclick="dashToggleCode(\'' + codeId + '\')">';
+      html += '<span class="badge ' + badgeCls + '">' + badgeTxt + '</span>';
+      if (a.error_msg) html += '<span style="font-size:.68rem;color:var(--rose);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escH(a.error_msg) + '">Błąd</span>';
+      html += '<span style="font-size:.72rem;color:var(--muted);margin-left:auto">' + dashFmtDateTime(a.attempted_at) + '</span>';
+      html += '</div>';
+      if (a.query) {
+        html += '<div class="dash-attempt-code" id="' + codeId + '">' + escH(a.query) + '</div>';
+      }
+    });
+  } else {
+    html += '<div style="color:var(--muted);font-size:.8rem;font-style:italic;margin-top:.35rem">Jeszcze nie próbowano tego zadania.</div>';
+  }
+
+  html += '</div>'; // body
+  html += '</div>'; // dash-task
+  return html;
+}
+
+
 async function loadStats() {
   $('sessionDisplay').textContent = SID;
 
   var data     = await apiGet('/api/stats/' + SID).catch(function() { return {}; });
   var detailed = await apiGet('/api/stats/detailed/' + SID).catch(function() { return {}; });
+  var dashboard = await apiGet('/api/stats/dashboard/' + SID).catch(function() { return {}; });
 
   var q  = data.quiz       || {};
   var a  = data.algo       || {};
   var s  = data.sql        || {};
   var f  = data.flashcards || [];
-  var algoPerTask  = detailed.algoPerTask  || [];
-  var sqlPerTask   = detailed.sqlPerTask   || [];
   var quizPerCat   = detailed.quizPerCat   || [];
 
   var quizPct   = (q.total  > 0) ? Math.round((q.correct  || 0) / q.total  * 100) : 0;
@@ -5406,80 +5712,25 @@ async function loadStats() {
     progressBar('Algo',  algoPct,  'var(--indigo)') +
     progressBar('SQL',   sqlPct,   'var(--teal)');
 
-  /* ── Sekcja Algo: per-zadanie ── */
-  var algoEl = $('statsAlgoPerTask');
-  if (algoEl) {
-    if (!algoPerTask.length) {
-      algoEl.innerHTML = '<div style="color:var(--muted);font-size:.83rem">Brak prób algorytmiki.</div>';
+  /* ── Dashboard: Algo tasks ── */
+  var dashAlgoEl = $('dashAlgoTasks');
+  if (dashAlgoEl) {
+    var algoList = dashboard.algoTasks || [];
+    if (!algoList.length) {
+      dashAlgoEl.innerHTML = '<div style="color:var(--muted);font-size:.83rem">Brak zadań algorytmiki.</div>';
     } else {
-      var html = '<table class="admin-tbl"><thead><tr>' +
-        '<th>Zadanie</th><th>Próby</th><th>Ukończone</th><th>Najlepszy wynik</th><th>Czas</th><th>Ostatnia próba</th>' +
-        '</tr></thead><tbody>';
-      algoPerTask.forEach(function(row) {
-        var bestPct  = row.tests_total > 0 ? Math.round(row.best_passed / row.tests_total * 100) : 0;
-        var fullOk   = row.fully_passed > 0;
-        var barColor = fullOk ? 'var(--green)' : bestPct >= 60 ? 'var(--amber)' : 'var(--rose)';
-        var timeStr  = row.best_time_ms > 0
-          ? (row.best_time_ms >= 60000
-              ? Math.floor(row.best_time_ms / 60000) + 'm ' + Math.floor((row.best_time_ms % 60000) / 1000) + 's'
-              : (row.best_time_ms / 1000).toFixed(0) + 's')
-          : '—';
-        html += '<tr>' +
-          '<td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escH(row.task_title) + '</td>' +
-          '<td style="font-family:var(--mono);text-align:center">' + row.attempts + '</td>' +
-          '<td style="text-align:center">' + (fullOk
-            ? '<span class="badge b-ok">✓ ' + row.fully_passed + '×</span>'
-            : '<span class="badge b-err">—</span>') + '</td>' +
-          '<td>' +
-            '<div style="display:flex;align-items:center;gap:8px">' +
-              '<div style="flex:1;background:var(--raised);border-radius:99px;height:6px;overflow:hidden;border:1px solid var(--border)">' +
-                '<div style="width:' + bestPct + '%;height:100%;background:' + barColor + ';border-radius:99px;transition:width .4s"></div>' +
-              '</div>' +
-              '<span style="font-family:var(--mono);font-size:.75rem;min-width:50px;color:' + barColor + '">' +
-                row.best_passed + '/' + row.tests_total + ' (' + bestPct + '%)' +
-              '</span>' +
-            '</div>' +
-          '</td>' +
-          '<td style="font-family:var(--mono);font-size:.78rem;color:var(--muted)">' + timeStr + '</td>' +
-          '<td style="color:var(--muted);font-size:.78rem">' + fmtDate(row.last_attempt) + '</td>' +
-        '</tr>';
-      });
-      html += '</tbody></table>';
-      algoEl.innerHTML = html;
+      dashAlgoEl.innerHTML = algoList.map(renderAlgoTaskCard).join('');
     }
   }
 
-  /* ── Sekcja SQL: per-zadanie ── */
-  var sqlEl = $('statsSQLPerTask');
-  if (sqlEl) {
-    if (!sqlPerTask.length) {
-      sqlEl.innerHTML = '<div style="color:var(--muted);font-size:.83rem">Brak prób SQL.</div>';
+  /* ── Dashboard: SQL tasks ── */
+  var dashSqlEl = $('dashSqlTasks');
+  if (dashSqlEl) {
+    var sqlList = dashboard.sqlTasks || [];
+    if (!sqlList.length) {
+      dashSqlEl.innerHTML = '<div style="color:var(--muted);font-size:.83rem">Brak zadań SQL.</div>';
     } else {
-      var html2 = '<table class="admin-tbl"><thead><tr>' +
-        '<th>Zadanie</th><th>Próby</th><th>Poprawne</th><th>Skuteczność</th><th>Ostatnia próba</th>' +
-        '</tr></thead><tbody>';
-      sqlPerTask.forEach(function(row) {
-        var pct = row.attempts > 0 ? Math.round((row.correct || 0) / row.attempts * 100) : 0;
-        var color = pct === 100 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--rose)';
-        html2 += '<tr>' +
-          '<td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escH(row.task_title) + '</td>' +
-          '<td style="font-family:var(--mono);text-align:center">' + row.attempts + '</td>' +
-          '<td style="text-align:center">' + (row.correct > 0
-            ? '<span class="badge b-ok">✓ ' + row.correct + '</span>'
-            : '<span class="badge b-err">0</span>') + '</td>' +
-          '<td>' +
-            '<div style="display:flex;align-items:center;gap:8px">' +
-              '<div style="flex:1;background:var(--raised);border-radius:99px;height:6px;overflow:hidden;border:1px solid var(--border)">' +
-                '<div style="width:' + pct + '%;height:100%;background:' + color + ';border-radius:99px;transition:width .4s"></div>' +
-              '</div>' +
-              '<span style="font-family:var(--mono);font-size:.75rem;min-width:38px;color:' + color + '">' + pct + '%</span>' +
-            '</div>' +
-          '</td>' +
-          '<td style="color:var(--muted);font-size:.78rem">' + fmtDate(row.last_attempt) + '</td>' +
-        '</tr>';
-      });
-      html2 += '</tbody></table>';
-      sqlEl.innerHTML = html2;
+      dashSqlEl.innerHTML = sqlList.map(renderSqlTaskCard).join('');
     }
   }
 
