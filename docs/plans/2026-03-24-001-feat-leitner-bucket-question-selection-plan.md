@@ -1,7 +1,7 @@
 ---
 title: "feat: Leitner Bucket System for Quiz Question Selection"
 type: feat
-status: active
+status: completed
 date: 2026-03-24
 origin: docs/brainstorms/2026-03-24-leitner-question-selection-requirements.md
 ---
