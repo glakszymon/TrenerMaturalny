@@ -515,6 +515,60 @@ app.post('/api/quiz/result', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+/* GET /api/quiz/buckets/:sid — Leitner bucket assignments for all questions */
+app.get('/api/quiz/buckets/:sid', async (req, res) => {
+  const sid = req.params.sid;
+  try {
+    // Fetch all quiz results for this session, ordered by question then time (newest first)
+    const rows = await db(
+      `SELECT question_id, is_correct
+       FROM quiz_results
+       WHERE session_id = ? AND question_id IS NOT NULL
+       ORDER BY question_id, answered_at DESC`,
+      [sid]
+    );
+
+    // Group results by question_id and compute consecutive correct from most recent
+    const buckets = {};
+    let curQid = null;
+    let consecutive = 0;
+    let sawWrong = false;
+
+    for (const row of rows) {
+      if (row.question_id !== curQid) {
+        // Save previous question's bucket
+        if (curQid !== null) {
+          buckets[curQid] = {
+            bucket: consecutive >= 2 ? 'strong' : 'weak',
+            consecutive_correct: consecutive
+          };
+        }
+        // Start new question
+        curQid = row.question_id;
+        consecutive = 0;
+        sawWrong = false;
+      }
+      // Count consecutive correct from the top (most recent)
+      if (!sawWrong) {
+        if (row.is_correct) {
+          consecutive++;
+        } else {
+          sawWrong = true;
+        }
+      }
+    }
+    // Save last question
+    if (curQid !== null) {
+      buckets[curQid] = {
+        bucket: consecutive >= 2 ? 'strong' : 'weak',
+        consecutive_correct: consecutive
+      };
+    }
+
+    res.json({ buckets });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/flashcard/seen', async (req, res) => {
   const { session_id, question_id, correct } = req.body;
   if (!session_id) return res.status(400).json({ error: 'Brak session_id.' });

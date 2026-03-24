@@ -775,6 +775,18 @@ details:not([open]) > summary::before { content:'▸ '; }
 .prog-row .prog-bar { flex:1; }
 .prog-txt { font-size:.77rem; color:var(--muted); white-space:nowrap; font-weight:700; }
 
+/* Leitner bucket progression */
+.bucket-progress { display:flex; gap:16px; margin-bottom:1rem; font-size:.78rem; font-weight:700; color:var(--muted); }
+.bp-item { display:flex; align-items:center; gap:5px; }
+.bp-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.bp-unseen .bp-dot { background:var(--muted); opacity:.5; }
+.bp-weak .bp-dot   { background:var(--amber); }
+.bp-strong .bp-dot  { background:var(--green); }
+.bp-focus { display:flex; align-items:center; gap:3px; font-size:.72rem; font-weight:700; color:rgba(255,255,255,.7); }
+.bp-dot-unseen { width:7px; height:7px; border-radius:50%; display:inline-block; background:rgba(255,255,255,.35); }
+.bp-dot-weak   { width:7px; height:7px; border-radius:50%; display:inline-block; background:var(--amber); }
+.bp-dot-strong { width:7px; height:7px; border-radius:50%; display:inline-block; background:var(--green); }
+
 .quiz-hdr { display:flex; align-items:center; gap:14px; margin-bottom:1.25rem; flex-wrap:wrap; }
 .score-row { display:flex; gap:10px; margin-left:auto; }
 .score-chip { display:flex; flex-direction:column; align-items:center; background:#fff; border:2px solid var(--border); border-radius:var(--r-sm); padding:7px 14px; min-width:64px; box-shadow:var(--shadow); }
@@ -2033,6 +2045,9 @@ li.CodeMirror-hint-active {
       <div class="qz-chip qz-tot"><span id="qzFTot">0</span><span class="qzl">Razem</span></div>
     </div>
     <div class="qz-focus-ctrl">
+      <span class="bp-focus" title="Nowe"><span class="bp-dot bp-dot-unseen"></span><span id="bpFUnseen">0</span></span>
+      <span class="bp-focus" title="Do nauki"><span class="bp-dot bp-dot-weak"></span><span id="bpFWeak">0</span></span>
+      <span class="bp-focus" title="Opanowane"><span class="bp-dot bp-dot-strong"></span><span id="bpFStrong">0</span></span>
       <button class="qz-btn-pause" id="btnFocusPause" title="Pauza (P)">⏸ Pauza</button>
       <button class="qz-btn-stop"  id="btnFocusStop"  title="Stop i pokaż wynik">■ Stop</button>
     </div>
@@ -2112,6 +2127,12 @@ li.CodeMirror-hint-active {
   <div class="prog-row">
     <div class="prog-bar"><div class="prog-fill" id="qProg" style="width:0%;background:var(--amber)"></div></div>
     <div class="prog-txt" id="qProgTxt">0 / 0</div>
+  </div>
+  <!-- Leitner bucket progression indicator -->
+  <div class="bucket-progress" id="bucketProgress">
+    <span class="bp-item bp-unseen" title="Nowe pytania"><span class="bp-dot"></span> Nowe: <span id="bpUnseen">0</span></span>
+    <span class="bp-item bp-weak" title="Do nauki"><span class="bp-dot"></span> Do nauki: <span id="bpWeak">0</span></span>
+    <span class="bp-item bp-strong" title="Opanowane"><span class="bp-dot"></span> Opanowane: <span id="bpStrong">0</span></span>
   </div>
 
   <!-- ═══ PANEL 1: Lista fiszek ═══ -->
@@ -2658,6 +2679,7 @@ li.CodeMirror-hint-active {
 <script>
 var QUIZ_Q = []; // Ładowane z bazy danych przez /api/quiz/questions
 var QUIZ_LOADED = false;
+var BUCKET_MAP = {}; // Leitner bucket assignments: { questionId: { bucket: 'unseen'|'weak'|'strong', consecutive_correct: N } }
 
 </script>
 
@@ -2672,6 +2694,65 @@ function escH(s){if(s==null)return'';return String(s).replace(/&/g,'&amp;').repl
 function shuffle(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=arr[i];arr[i]=arr[j];arr[j]=tmp;}return arr;}
 function rand(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
+/* ── Leitner weighted draw ── */
+function getBucket(qId) {
+  var entry = BUCKET_MAP[qId];
+  if (!entry) return 'unseen';
+  return entry.bucket;
+}
+
+function weightedDraw(questions) {
+  if (!questions.length) return [];
+  // Classify into buckets
+  var pools = { unseen: [], weak: [], strong: [] };
+  questions.forEach(function(q) {
+    pools[getBucket(q.id)].push(q);
+  });
+  // Shuffle each pool internally
+  shuffle(pools.unseen);
+  shuffle(pools.weak);
+  shuffle(pools.strong);
+
+  // Calculate effective weights (only for non-empty buckets)
+  var baseWeights = { unseen: 0.25, weak: 0.60, strong: 0.15 };
+  var weights = {};
+  var totalWeight = 0;
+  ['unseen', 'weak', 'strong'].forEach(function(b) {
+    if (pools[b].length > 0) {
+      weights[b] = baseWeights[b];
+      totalWeight += baseWeights[b];
+    }
+  });
+  // Normalize
+  var bucketNames = Object.keys(weights);
+  bucketNames.forEach(function(b) { weights[b] /= totalWeight; });
+
+  // Build result array via weighted random bucket selection
+  var result = [];
+  var idx = { unseen: 0, weak: 0, strong: 0 };
+
+  while (result.length < questions.length) {
+    // Recalculate available buckets (non-exhausted)
+    var available = bucketNames.filter(function(b) { return idx[b] < pools[b].length; });
+    if (!available.length) break;
+
+    // Calculate normalized weights for available buckets
+    var avTotal = 0;
+    available.forEach(function(b) { avTotal += weights[b]; });
+
+    // Pick a bucket by weighted random
+    var roll = Math.random() * avTotal;
+    var cum = 0;
+    var picked = available[available.length - 1]; // fallback
+    for (var i = 0; i < available.length; i++) {
+      cum += weights[available[i]];
+      if (roll < cum) { picked = available[i]; break; }
+    }
+
+    result.push(pools[picked][idx[picked]++]);
+  }
+  return result;
+}
 /* ── toast ── */
 var toastTimer;
 function toast(msg, type){
@@ -2805,6 +2886,56 @@ async function loadQuizQuestionsFromDB() {
   } catch(e) { console.warn('Nie można załadować pytań quizowych:', e); }
 }
 
+/* ── Leitner bucket loading ── */
+async function loadBuckets() {
+  try {
+    var data = await apiGet('/api/quiz/buckets/' + SID);
+    if (data && data.buckets) {
+      BUCKET_MAP = data.buckets;
+    } else {
+      BUCKET_MAP = {};
+    }
+  } catch(e) { console.warn('loadBuckets:', e); BUCKET_MAP = {}; }
+}
+
+/* Update bucket state locally after an answer (avoids re-fetching from server) */
+function updateBucketLocal(qId, isCorrect) {
+  var entry = BUCKET_MAP[qId];
+  if (!entry) {
+    // Was Unseen → now Weak
+    BUCKET_MAP[qId] = { bucket: 'weak', consecutive_correct: isCorrect ? 1 : 0 };
+  } else if (isCorrect) {
+    entry.consecutive_correct++;
+    if (entry.consecutive_correct >= 2) {
+      entry.bucket = 'strong';
+    } else {
+      entry.bucket = 'weak';
+    }
+  } else {
+    // Wrong answer → demote to weak, reset streak
+    entry.consecutive_correct = 0;
+    entry.bucket = 'weak';
+  }
+  updateBucketIndicator();
+}
+
+/* Update the visual bucket progression indicator */
+function updateBucketIndicator() {
+  var qs = getQs();
+  var counts = { unseen: 0, weak: 0, strong: 0 };
+  qs.forEach(function(q) {
+    counts[getBucket(q.id)]++;
+  });
+  // Main view indicators
+  if ($('bpUnseen')) $('bpUnseen').textContent = counts.unseen;
+  if ($('bpWeak'))   $('bpWeak').textContent   = counts.weak;
+  if ($('bpStrong')) $('bpStrong').textContent  = counts.strong;
+  // Focus mode indicators
+  if ($('bpFUnseen')) $('bpFUnseen').textContent = counts.unseen;
+  if ($('bpFWeak'))   $('bpFWeak').textContent   = counts.weak;
+  if ($('bpFStrong')) $('bpFStrong').textContent  = counts.strong;
+}
+
 /* ── sidebar nav ── */
 function showTab(tab){
   // Hide all sections
@@ -2830,7 +2961,7 @@ function showTab(tab){
   }
   document.querySelector('[data-tab="'+tab+'"]').classList.add('on');
   if(tab==='stats')loadStats();
-  if(tab==='quiz')loadQuizQuestionsFromDB();
+  if(tab==='quiz'){ loadQuizQuestionsFromDB().then(loadBuckets); }
   if(tab==='db'){
     if(!window._adminUnlocked){
       var pin = prompt('Podaj PIN administratora:');
@@ -4292,10 +4423,10 @@ function updateProg(){
 
 /* odśwież aktywny panel */
 function refreshAll(){
-  renderCats(); updateProg();
+  renderCats(); updateProg(); updateBucketIndicator();
   if(qMode==='lista')  renderListaFiszek();
-  if(qMode==='nauka')  learnRenderCard();
-  if(qMode==='quiz')   renderMCQ();
+  if(qMode==='nauka')  learnStart(getQs());
+  if(qMode==='quiz')   { qzShuffle(); if(qzState==='question'||qzState==='answered') qzNextQ(); else renderMCQ(); }
 }
 
 /* ─── PRZEŁĄCZNIK TRYBÓW ─── */
@@ -4365,8 +4496,8 @@ var learnFlipped = false;
 
 function learnStart(qs){
   if(!qs.length) return;
-  // tasuj
-  learnDeck = shuffle(qs.slice()).map(function(q){
+  // Leitner weighted draw
+  learnDeck = weightedDraw(qs.slice()).map(function(q){
     return { q:q, known:null };
   });
   learnCursor = 0; learnFlipped = false;
@@ -4412,7 +4543,12 @@ function learnFlip(){
 
 function learnRate(known){
   if(!learnFlipped) return; // wymuś obejrzenie odpowiedzi
-  learnDeck[learnCursor].known = known;
+  var item = learnDeck[learnCursor];
+  item.known = known;
+  // Persist to quiz_results for Leitner bucket tracking
+  var q = item.q;
+  apiPost('/api/quiz/result',{session_id:SID,question_id:q.id,category:q.cat,question_text:q.q,is_correct:known,time_ms:0}).catch(function(){});
+  updateBucketLocal(q.id, known);
   learnCursor++;
   // krótka animacja przesunięcia
   var inner = $('flipInner');
@@ -4503,7 +4639,7 @@ function qzUpdateTimer(s){
 }
 
 function qzShuffle(){
-  qzShuffled = shuffle(getQs().slice());
+  qzShuffled = weightedDraw(getQs().slice());
   qzSesIdx = 0;
 }
 
@@ -4595,6 +4731,7 @@ function qzAnswer(chosen, q){
   $('qzProgFill').style.width = '100%';
 
   apiPost('/api/quiz/result',{session_id:SID,question_id:q.id,category:q.cat,question_text:q.q,is_correct:ok,time_ms:elapsed}).catch(function(){});
+  updateBucketLocal(q.id, ok);
   setTimeout(function(){ if(qzState==='answered') qzNextQ(); }, 1600);
 }
 
@@ -4612,6 +4749,7 @@ function qzTimeout(q){
   $('qzScene').classList.add('wrong');
   $('qzProgTxt').textContent = 'Pytanie ' + qzScore.tot;
   apiPost('/api/quiz/result',{session_id:SID,question_id:q.id,category:q.cat,question_text:q.q,is_correct:false,time_ms:TSEC*1000}).catch(function(){});
+  updateBucketLocal(q.id, false);
   setTimeout(function(){ if(qzState==='answered') qzNextQ(); }, 2000);
 }
 
@@ -4740,7 +4878,7 @@ function qzFUpdateTimer(s){
 }
 
 function qzFShuffle(){
-  qzFShuffled = shuffle(getQs().slice());
+  qzFShuffled = weightedDraw(getQs().slice());
   qzFSesIdx   = 0;
 }
 
@@ -4825,6 +4963,7 @@ function qzFAnswer(chosen, q){
 
   $('qzFProgFill').style.width = '100%';
   apiPost('/api/quiz/result',{session_id:SID,question_id:q.id,category:q.cat,question_text:q.q,is_correct:ok,time_ms:elapsed}).catch(function(){});
+  updateBucketLocal(q.id, ok);
   setTimeout(function(){ if(qzFState==='answered') qzFNextQ(); }, 1600);
 }
 
@@ -4841,6 +4980,7 @@ function qzFTimeout(q){
   fb.textContent='⏰ Czas! Poprawna: '+q.opts[q.correct]; fb.style.color='var(--amber)';
   $('qzFocusCard').classList.add('wrong');
   apiPost('/api/quiz/result',{session_id:SID,question_id:q.id,category:q.cat,question_text:q.q,is_correct:false,time_ms:TSEC*1000}).catch(function(){});
+  updateBucketLocal(q.id, false);
   setTimeout(function(){ if(qzFState==='answered') qzFNextQ(); }, 2000);
 }
 
@@ -5808,7 +5948,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initResizers();
   loadAlgoTasks();
   loadSQLTasks();
-  loadQuizQuestionsFromDB().then(function() { renderCats(); renderListaFiszek(); updateProg(); });
+  loadQuizQuestionsFromDB().then(function() { renderCats(); renderListaFiszek(); updateProg(); return loadBuckets(); }).then(function() { updateBucketIndicator(); });
   showTab('algo');
   makeStopwatch('swDisplay',    'swStart',    'swStop',    'swRestart');
   makeStopwatch('swDisplaySQL', 'swStartSQL', 'swStopSQL', 'swRestartSQL');
