@@ -5535,6 +5535,12 @@ function dashToggleCode(id) {
   if (el) el.classList.toggle('open');
 }
 
+/* Expose dashboard functions globally for inline onclick handlers */
+window.dashToggle = dashToggle;
+window.dashToggleCode = dashToggleCode;
+window.dashGoAlgo = dashGoAlgo;
+window.dashGoSql = dashGoSql;
+
 /* Render a single algo task card */
 function renderAlgoTaskCard(t) {
   var hasTries = t.total_attempts > 0;
