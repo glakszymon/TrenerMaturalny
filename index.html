@@ -787,6 +787,21 @@ details:not([open]) > summary::before { content:'▸ '; }
 .bp-dot-weak   { width:7px; height:7px; border-radius:50%; display:inline-block; background:var(--amber); }
 .bp-dot-strong { width:7px; height:7px; border-radius:50%; display:inline-block; background:var(--green); }
 
+/* Bucket badge on individual questions */
+.bucket-badge { display:inline-flex; align-items:center; gap:4px; font-size:.65rem; font-weight:800; letter-spacing:.03em; padding:2px 8px; border-radius:10px; vertical-align:middle; text-transform:uppercase; }
+.bucket-badge-unseen { background:var(--border); color:var(--muted); }
+.bucket-badge-weak   { background:#fff3cd; color:#856404; }
+.bucket-badge-strong  { background:#d4edda; color:#155724; }
+/* Badge inside fiszka cards */
+.fiszka-card .bucket-badge { margin-left:6px; }
+/* Badge inside quiz/focus/learn cards */
+.qz-bucket-badge { margin-top:6px; text-align:center; }
+.qz-focus-bucket-badge { margin-top:4px; text-align:center; }
+.qz-focus-bucket-badge .bucket-badge-unseen { background:rgba(255,255,255,.15); color:rgba(255,255,255,.7); }
+.qz-focus-bucket-badge .bucket-badge-weak   { background:rgba(255,193,7,.2); color:#ffc107; }
+.qz-focus-bucket-badge .bucket-badge-strong  { background:rgba(40,167,69,.2); color:#5cb85c; }
+.flip-bucket-badge { margin-top:4px; text-align:center; }
+
 .quiz-hdr { display:flex; align-items:center; gap:14px; margin-bottom:1.25rem; flex-wrap:wrap; }
 .score-row { display:flex; gap:10px; margin-left:auto; }
 .score-chip { display:flex; flex-direction:column; align-items:center; background:#fff; border:2px solid var(--border); border-radius:var(--r-sm); padding:7px 14px; min-width:64px; box-shadow:var(--shadow); }
@@ -2065,6 +2080,7 @@ li.CodeMirror-hint-active {
         <div class="qz-ft-num" id="qzFTimerNum">15</div>
       </div>
       <div class="qz-focus-cat"   id="qzFCat">Kategoria</div>
+      <div class="qz-focus-bucket-badge" id="qzFBucketBadge"></div>
       <div class="qz-focus-qtext" id="qzFQText">Ładowanie pytania…</div>
       <div class="qz-focus-opts"  id="qzFOpts" style="width:100%;margin-top:.5rem"></div>
       <div class="qz-focus-feedback" id="qzFFeedback"></div>
@@ -2163,6 +2179,7 @@ li.CodeMirror-hint-active {
           <div class="flip-front">
             <div class="flip-label">pytanie</div>
             <div class="flip-cat" id="learnCat">Kategoria</div>
+            <div class="flip-bucket-badge" id="learnBucketBadge"></div>
             <div class="flip-q"   id="learnQ">Kliknij START aby rozpocząć</div>
             <div class="flip-hint"><span>Kliknij kartę lub naciśnij</span><kbd class="kbd">Spacja</kbd><span>aby obrócić</span></div>
           </div>
@@ -2240,6 +2257,7 @@ li.CodeMirror-hint-active {
             <div class="qz-t-num" id="qzTimerNum">15</div>
           </div>
           <div class="flip-cat" id="qzCat">Kategoria</div>
+          <div class="qz-bucket-badge" id="qzBucketBadge"></div>
           <div class="qz-q-text" id="qzQText">Oczekiwanie na start…</div>
           <div class="qz-opts" id="qzOpts" style="width:100%;margin-top:1.1rem"></div>
           <div class="qz-feedback" id="qzFeedback"></div>
@@ -2699,6 +2717,17 @@ function getBucket(qId) {
   var entry = BUCKET_MAP[qId];
   if (!entry) return 'unseen';
   return entry.bucket;
+}
+
+var BUCKET_LABELS = { unseen: 'Nowe', weak: 'Do nauki', strong: 'Opanowane' };
+function bucketBadgeHTML(qId) {
+  var b = getBucket(qId);
+  return '<span class="bucket-badge bucket-badge-'+b+'">'+BUCKET_LABELS[b]+'</span>';
+}
+function setBucketBadge(elId, qId) {
+  var el = $(elId);
+  if (!el) return;
+  el.innerHTML = bucketBadgeHTML(qId);
 }
 
 function weightedDraw(questions) {
@@ -4465,6 +4494,7 @@ function renderListaFiszek(){
     html += '<div class="fiszka-card" onclick="toggleFiszka(this)" data-id="'+q.id+'">' +
       '<span class="fc-num">#'+(i+1)+'</span>' +
       '<div class="fc-cat-tag">'+escH(q.cat)+'</div>' +
+      bucketBadgeHTML(q.id) +
       '<div class="fc-q-text">'+escH(q.q)+'</div>' +
       '<div class="fc-a-text">'+escH(q.a||'—')+'</div>' +
       '<div class="fc-toggle">▾ Pokaż odpowiedź</div>' +
@@ -4517,6 +4547,7 @@ function learnRenderCard(){
   $('flipScene').classList.remove('flipped');
   $('learnActions').classList.add('hidden-until-flip');
   $('learnCat').textContent = q.cat;
+  setBucketBadge('learnBucketBadge', q.id);
   $('learnQ').textContent   = q.q;
   $('learnA').textContent   = q.a || q.opts[q.correct] || '—';
 
@@ -4674,6 +4705,7 @@ function qzNextQ(){
 
   // Pytanie
   $('qzCat').textContent   = q.cat;
+  setBucketBadge('qzBucketBadge', q.id);
   $('qzQText').textContent = q.q;
   $('qzFeedback').textContent = '';
   $('qzFeedback').style.color = '';
@@ -4909,6 +4941,7 @@ function qzFNextQ(){
 
   $('qzFocusCard').classList.remove('correct','wrong');
   $('qzFCat').textContent      = q.cat;
+  setBucketBadge('qzFBucketBadge', q.id);
   $('qzFQText').textContent    = q.q;
   $('qzFFeedback').textContent = '';
   $('qzFFeedback').style.color = '';
@@ -5948,7 +5981,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initResizers();
   loadAlgoTasks();
   loadSQLTasks();
-  loadQuizQuestionsFromDB().then(function() { renderCats(); renderListaFiszek(); updateProg(); return loadBuckets(); }).then(function() { updateBucketIndicator(); });
+  loadQuizQuestionsFromDB().then(function() { renderCats(); renderListaFiszek(); updateProg(); return loadBuckets(); }).then(function() { updateBucketIndicator(); renderListaFiszek(); });
   showTab('algo');
   makeStopwatch('swDisplay',    'swStart',    'swStop',    'swRestart');
   makeStopwatch('swDisplaySQL', 'swStartSQL', 'swStopSQL', 'swRestartSQL');
