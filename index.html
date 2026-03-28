@@ -2477,7 +2477,10 @@ li.CodeMirror-hint-active {
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
         <div class="clabel" style="margin:0">Pytania quizowe</div>
-        <button class="btn sm success" id="btnAddQuizQ">+ Dodaj pytanie</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn sm" id="btnBulkQuizQ">📥 Import pytań</button>
+          <button class="btn sm success" id="btnAddQuizQ">+ Dodaj pytanie</button>
+        </div>
       </div>
       <div class="add-form" id="formAddQuizQ">
         <div style="font-size:.85rem;font-weight:700;margin-bottom:.85rem;color:var(--blue)">Nowe pytanie quizowe</div>
@@ -2494,6 +2497,53 @@ li.CodeMirror-hint-active {
         <div class="btn-row" style="margin:0">
           <button class="btn v" id="btnSaveQuizQ">Zapisz pytanie</button>
           <button class="btn"   id="btnCancelQuizQ">Anuluj</button>
+        </div>
+      </div>
+      <div class="add-form" id="formBulkQuizQ">
+        <div style="font-size:.85rem;font-weight:700;margin-bottom:.85rem;color:var(--blue)">📥 Import wielu pytań</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem;line-height:1.6">
+          Wklej dane w formacie <strong>JSON</strong> lub <strong>CSV</strong>. Każde pytanie musi zawierać pola:
+          <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">category</code>,
+          <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">question</code>,
+          <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">opt_a</code>,
+          <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">opt_b</code>,
+          <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">opt_c</code>,
+          <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">opt_d</code>,
+          <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">correct</code> (0–3).
+          Opcjonalnie: <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">answer_full</code>.
+          <br>CSV wymaga wiersza nagłówkowego z nazwami pól. Obsługiwane separatory: <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">,</code> oraz <code style="background:var(--raised);padding:1px 5px;border-radius:4px;font-size:.75rem">;</code> (auto-detekcja).
+        </div>
+        <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.65rem">
+          <div style="display:flex;gap:1rem;font-size:.82rem">
+            <label style="cursor:pointer;display:flex;align-items:center;gap:4px"><input type="radio" name="bulkFormat" value="json" checked> JSON</label>
+            <label style="cursor:pointer;display:flex;align-items:center;gap:4px"><input type="radio" name="bulkFormat" value="csv"> CSV</label>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn sm" id="btnBulkExampleJson" type="button" style="font-size:.72rem;padding:2px 8px">Przykład JSON</button>
+            <button class="btn sm" id="btnBulkExampleCsv" type="button" style="font-size:.72rem;padding:2px 8px">Przykład CSV</button>
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:.75rem">
+          <label>Dane do importu</label>
+          <textarea id="bulkQuizJson" style="min-height:160px;font-family:var(--mono);font-size:.78rem" placeholder='[
+  {
+    "category": "Sieci",
+    "question": "Co to jest IP?",
+    "answer_full": "IP to protokół...",
+    "opt_a": "Protokół internetowy",
+    "opt_b": "Przeglądarka",
+    "opt_c": "System operacyjny",
+    "opt_d": "Język programowania",
+    "correct": 0
+  }
+]'></textarea>
+        </div>
+        <div id="bulkQuizPreview" style="display:none;margin-bottom:.75rem"></div>
+        <div id="bulkQuizError" style="display:none;color:var(--rose);font-size:.8rem;font-weight:700;margin-bottom:.75rem"></div>
+        <div class="btn-row" style="margin:0">
+          <button class="btn" id="btnBulkPreview">👁 Podgląd</button>
+          <button class="btn v" id="btnBulkImport" disabled>Importuj do bazy</button>
+          <button class="btn" id="btnBulkCancel">Anuluj</button>
         </div>
       </div>
       <div class="tbl-wrap" id="quizQTable"></div>
@@ -5498,7 +5548,7 @@ function renderQuizQTable() {
   wrap.innerHTML = html;
 }
 
-$('btnAddQuizQ').addEventListener('click', function() { $('formAddQuizQ').classList.toggle('on'); });
+$('btnAddQuizQ').addEventListener('click', function() { $('formAddQuizQ').classList.toggle('on'); $('formBulkQuizQ').classList.remove('on'); });
 $('btnCancelQuizQ').addEventListener('click', function() { $('formAddQuizQ').classList.remove('on'); });
 $('btnSaveQuizQ').addEventListener('click', async function() {
   var cat   = $('qq_cat').value.trim();
@@ -5574,6 +5624,214 @@ $('btnModalQuizQSave').addEventListener('click', async function() {
     renderQuizQTable();
     renderCats();
   } else toast('Błąd zapisu: ' + (r && r.error || ''), 'err');
+});
+
+/* ── Bulk import pytań quizowych ── */
+$('btnBulkQuizQ').addEventListener('click', function() {
+  $('formBulkQuizQ').classList.toggle('on');
+  $('formAddQuizQ').classList.remove('on');
+  $('bulkQuizPreview').style.display = 'none';
+  $('bulkQuizError').style.display = 'none';
+  $('btnBulkImport').disabled = true;
+});
+$('btnBulkCancel').addEventListener('click', function() {
+  $('formBulkQuizQ').classList.remove('on');
+  $('bulkQuizPreview').style.display = 'none';
+  $('bulkQuizError').style.display = 'none';
+  $('btnBulkImport').disabled = true;
+});
+
+var _bulkParsed = [];
+
+function bulkShowError(msg) {
+  var el = $('bulkQuizError');
+  el.innerHTML = msg;
+  el.style.display = 'block';
+  $('bulkQuizPreview').style.display = 'none';
+  $('btnBulkImport').disabled = true;
+}
+
+/* CSV parser with auto-delimiter detection and quoted field handling */
+function splitCsvLine(line, delim) {
+  var result = [], current = '', inQuotes = false;
+  for (var i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQuotes = !inQuotes; }
+    else if (line[i] === delim && !inQuotes) { result.push(current); current = ''; }
+    else { current += line[i]; }
+  }
+  result.push(current);
+  return result;
+}
+
+function parseBulkCsv(raw) {
+  // Strip BOM
+  if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+
+  var lines = raw.split(/\r?\n/).filter(function(l) { return l.trim(); });
+  if (lines.length < 2) throw new Error('CSV musi mieć nagłówek i min. 1 wiersz danych.');
+
+  // Auto-detect delimiter: count ; vs , in header
+  var header = lines[0];
+  var delim = (header.split(';').length > header.split(',').length) ? ';' : ',';
+
+  var cols = splitCsvLine(header, delim).map(function(c) { return c.trim().replace(/^"|"$/g, ''); });
+  var required = ['category','question','opt_a','opt_b','opt_c','opt_d','correct'];
+  required.forEach(function(f) {
+    if (cols.indexOf(f) === -1) throw new Error('Brak kolumny w nagłówku: ' + f);
+  });
+
+  var data = [];
+  for (var i = 1; i < lines.length; i++) {
+    var vals = splitCsvLine(lines[i], delim);
+    var obj = {};
+    cols.forEach(function(c, j) { obj[c] = (vals[j] || '').trim().replace(/^"|"$/g, ''); });
+    obj.correct = parseInt(obj.correct);
+    data.push(obj);
+  }
+  return data;
+}
+
+/* Auto-detect format: JSON starts with [ or { after trimming */
+function detectBulkFormat(raw) {
+  var first = raw.charAt(0);
+  if (first === '[' || first === '{') return 'json';
+  return 'csv';
+}
+
+/* Example template buttons */
+$('btnBulkExampleJson').addEventListener('click', function() {
+  document.querySelector('input[name="bulkFormat"][value="json"]').checked = true;
+  $('bulkQuizJson').value = JSON.stringify([
+    { category:"Sieci komputerowe", question:"Co to jest protokół IP?", answer_full:"IP (Internet Protocol) to protokół warstwy sieciowej odpowiedzialny za adresowanie i routing pakietów.",
+      opt_a:"Protokół warstwy sieciowej", opt_b:"Przeglądarka internetowa", opt_c:"System operacyjny", opt_d:"Język programowania", correct:0 },
+    { category:"Sieci komputerowe", question:"Co to jest DNS?", answer_full:"DNS (Domain Name System) to system tłumaczący nazwy domen na adresy IP.",
+      opt_a:"Domain Name System", opt_b:"Data Network Service", opt_c:"Digital Name Server", opt_d:"Dynamic Node System", correct:0 }
+  ], null, 2);
+});
+$('btnBulkExampleCsv').addEventListener('click', function() {
+  document.querySelector('input[name="bulkFormat"][value="csv"]').checked = true;
+  $('bulkQuizJson').value = 'category;question;answer_full;opt_a;opt_b;opt_c;opt_d;correct\n' +
+    'Sieci komputerowe;Co to jest protokół IP?;IP to protokół warstwy sieciowej;Protokół warstwy sieciowej;Przeglądarka internetowa;System operacyjny;Język programowania;0\n' +
+    'Sieci komputerowe;Co to jest DNS?;DNS tłumaczy nazwy domen na adresy IP;Domain Name System;Data Network Service;Digital Name Server;Dynamic Node System;0';
+});
+
+$('btnBulkPreview').addEventListener('click', function() {
+  $('bulkQuizError').style.display = 'none';
+  var raw = $('bulkQuizJson').value.trim();
+  if (!raw) { bulkShowError('Wklej dane w formacie JSON lub CSV.'); return; }
+
+  // Determine format from radio or auto-detect
+  var format = document.querySelector('input[name="bulkFormat"]:checked').value;
+  var detected = detectBulkFormat(raw);
+  // If user selected JSON but data looks like CSV (or vice versa), use auto-detected
+  if (format === 'json' && detected === 'csv') format = 'csv';
+  if (format === 'csv' && detected === 'json') format = 'json';
+
+  var data;
+  if (format === 'csv') {
+    try { data = parseBulkCsv(raw); } catch(e) { bulkShowError('Błąd parsowania CSV: ' + escH(e.message)); return; }
+  } else {
+    try { data = JSON.parse(raw); } catch(e) { bulkShowError('Błąd parsowania JSON: ' + escH(e.message)); return; }
+  }
+
+  if (!Array.isArray(data) || data.length === 0) { bulkShowError('Dane muszą zawierać przynajmniej jedno pytanie.'); return; }
+  if (data.length > 500) { bulkShowError('Maksymalnie 500 pytań na raz (podano ' + data.length + ').'); return; }
+
+  // Trim whitespace from all string fields
+  data.forEach(function(q) {
+    ['category','question','answer_full','opt_a','opt_b','opt_c','opt_d'].forEach(function(f) {
+      if (typeof q[f] === 'string') q[f] = q[f].trim();
+    });
+  });
+
+  // Validation
+  var errors = [];
+  var OPTS = ['A','B','C','D'];
+  data.forEach(function(q, i) {
+    var n = i + 1;
+    if (!q.category)  errors.push('#' + n + ': brak category');
+    if (!q.question)  errors.push('#' + n + ': brak question');
+    if (!q.opt_a)     errors.push('#' + n + ': brak opt_a');
+    if (!q.opt_b)     errors.push('#' + n + ': brak opt_b');
+    if (!q.opt_c)     errors.push('#' + n + ': brak opt_c');
+    if (!q.opt_d)     errors.push('#' + n + ': brak opt_d');
+    var c = parseInt(q.correct);
+    if (isNaN(c) || c < 0 || c > 3) errors.push('#' + n + ': correct musi być 0–3');
+  });
+  if (errors.length > 0) {
+    var errHtml = '<div>Błędy walidacji (' + errors.length + '):</div><div style="max-height:140px;overflow-y:auto;margin-top:4px;font-weight:400;font-size:.76rem">';
+    errors.forEach(function(e) { errHtml += '<div style="padding:1px 0">' + escH(e) + '</div>'; });
+    errHtml += '</div>';
+    bulkShowError(errHtml);
+    return;
+  }
+
+  // Duplicate detection against existing QUIZ_Q
+  var dupes = [];
+  if (QUIZ_Q && QUIZ_Q.length) {
+    var existing = {};
+    QUIZ_Q.forEach(function(q) { existing[q.cat + '||' + q.q] = true; });
+    data.forEach(function(q, i) {
+      if (existing[q.category + '||' + q.question]) dupes.push(i);
+    });
+  }
+
+  _bulkParsed = data;
+
+  // Render preview header
+  var html = '<div style="font-size:.78rem;font-weight:700;color:var(--green);margin-bottom:.5rem">✓ Podgląd: ' + data.length + ' pytań do importu';
+  if (dupes.length > 0) {
+    html += ' <span style="color:var(--amber);font-weight:600">⚠ ' + dupes.length + ' duplikat' + (dupes.length === 1 ? '' : dupes.length < 5 ? 'y' : 'ów') + ' w bazie</span>';
+  }
+  html += '</div>';
+
+  // Render preview table with all columns
+  html += '<div style="max-height:300px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--r-sm)">';
+  html += '<table class="admin-tbl" style="margin:0"><thead><tr><th>#</th><th>Kategoria</th><th>Pytanie</th><th>A</th><th>B</th><th>C</th><th>D</th><th>Popr.</th></tr></thead><tbody>';
+  data.forEach(function(q, i) {
+    var isDupe = dupes.indexOf(i) !== -1;
+    var rowStyle = isDupe ? 'background:rgba(245,158,11,.08)' : '';
+    var c = parseInt(q.correct);
+    html += '<tr style="' + rowStyle + '">' +
+      '<td style="font-family:var(--mono);color:var(--faint)">' + (i+1) + (isDupe ? ' <span title="Duplikat w bazie" style="color:var(--amber)">⚠</span>' : '') + '</td>' +
+      '<td><span class="badge b-warn">' + escH(q.category) + '</span></td>' +
+      '<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escH(q.question) + '">' + escH(q.question) + '</td>' +
+      '<td style="font-size:.72rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' + (c===0?';color:var(--green);font-weight:700':'') + '">' + escH(q.opt_a) + '</td>' +
+      '<td style="font-size:.72rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' + (c===1?';color:var(--green);font-weight:700':'') + '">' + escH(q.opt_b) + '</td>' +
+      '<td style="font-size:.72rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' + (c===2?';color:var(--green);font-weight:700':'') + '">' + escH(q.opt_c) + '</td>' +
+      '<td style="font-size:.72rem;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap' + (c===3?';color:var(--green);font-weight:700':'') + '">' + escH(q.opt_d) + '</td>' +
+      '<td style="color:var(--green);font-weight:700;text-align:center">' + OPTS[c] + '</td>' +
+    '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  $('bulkQuizPreview').innerHTML = html;
+  $('bulkQuizPreview').style.display = 'block';
+  $('btnBulkImport').disabled = false;
+});
+
+$('btnBulkImport').addEventListener('click', async function() {
+  if (!_bulkParsed.length) { toast('Najpierw kliknij Podgląd', 'err'); return; }
+  $('btnBulkImport').disabled = true;
+  $('btnBulkImport').textContent = 'Importowanie...';
+
+  var r = await apiPost('/api/quiz/questions/bulk', { questions: _bulkParsed });
+  if (r && r.ok) {
+    toast('✓ Zaimportowano ' + (r.inserted || _bulkParsed.length) + ' pytań');
+    $('formBulkQuizQ').classList.remove('on');
+    $('bulkQuizJson').value = '';
+    $('bulkQuizPreview').style.display = 'none';
+    $('bulkQuizError').style.display = 'none';
+    _bulkParsed = [];
+    QUIZ_LOADED = false;
+    await loadQuizQuestionsFromDB();
+    renderQuizQTable();
+    renderCats();
+  } else {
+    toast('Błąd importu: ' + (r && r.error || 'nieznany błąd'), 'err');
+  }
+  $('btnBulkImport').disabled = false;
+  $('btnBulkImport').textContent = 'Importuj do bazy';
 });
 
 /* ── Edycja testu algo ── */

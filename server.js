@@ -475,6 +475,55 @@ app.post('/api/quiz/questions', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+
+/* POST /api/quiz/questions/bulk – import wielu pytań naraz */
+app.post('/api/quiz/questions/bulk', async (req, res) => {
+  const { questions } = req.body;
+  if (!Array.isArray(questions) || questions.length === 0)
+    return res.status(400).json({ error: 'Wymagana niepusta tablica "questions".' });
+  if (questions.length > 500)
+    return res.status(400).json({ error: 'Maksymalnie 500 pytań na raz.' });
+
+  // Validate all questions before inserting
+  const errors = [];
+  questions.forEach((q, i) => {
+    // Trim whitespace from all string fields
+    ['category','question','answer_full','opt_a','opt_b','opt_c','opt_d'].forEach(f => {
+      if (typeof q[f] === 'string') q[f] = q[f].trim();
+    });
+    if (!q.category || !q.question || !q.opt_a || !q.opt_b || !q.opt_c || !q.opt_d) {
+      errors.push('Pytanie #' + (i + 1) + ': brak wymaganych pól.');
+    }
+    const c = parseInt(q.correct);
+    if (isNaN(c) || c < 0 || c > 3) {
+      errors.push('Pytanie #' + (i + 1) + ': correct musi być 0–3.');
+    }
+  });
+  if (errors.length > 0)
+    return res.status(400).json({ error: errors.join(' ') });
+
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
+    let inserted = 0;
+    for (const q of questions) {
+      await conn.query(
+        'INSERT INTO quiz_questions (category, question, answer_full, opt_a, opt_b, opt_c, opt_d, correct, is_active) VALUES (?,?,?,?,?,?,?,?,1)',
+        [q.category, q.question, q.answer_full || '', q.opt_a, q.opt_b, q.opt_c, q.opt_d, parseInt(q.correct)]
+      );
+      inserted++;
+    }
+    await conn.commit();
+    res.json({ ok: true, inserted });
+  } catch (e) {
+    if (conn) await conn.rollback().catch(() => {});
+    res.status(500).json({ error: e.message });
+  } finally {
+    if (conn) conn.end();
+  }
+});
+
 /* PUT /api/quiz/questions/:id – edytuj pytanie */
 app.put('/api/quiz/questions/:id', async (req, res) => {
   const { category, question, answer_full, opt_a, opt_b, opt_c, opt_d, correct, is_active } = req.body;
